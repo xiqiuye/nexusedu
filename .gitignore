@@ -1,0 +1,2 @@
+# Keep local environment files and their secrets out of version control.
+**/.env
