@@ -15,9 +15,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.xqy.nexusedu.application.system.model.SystemAuthModels;
+import com.xqy.nexusedu.common.dto.system.SystemAuthModels;
+import com.xqy.nexusedu.common.dto.system.AuthDtos;
 import com.xqy.nexusedu.application.system.port.in.SystemManagementService;
-import com.xqy.nexusedu.application.web.auth.AuthService;
+import com.xqy.nexusedu.application.system.auth.AuthService;
 import com.xqy.nexusedu.common.dto.ApiResponse;
 import com.xqy.nexusedu.common.dto.PageResult;
 import com.xqy.nexusedu.infrastructure.system.RpcCaller;
@@ -36,7 +37,7 @@ public class AuthController {
     }
 
     @PostMapping("/auth/login")
-    public ApiResponse<AuthService.TokenPair> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest) {
+    public ApiResponse<AuthDtos.TokenPair> login(@RequestBody AuthDtos.LoginRequest request, HttpServletRequest httpRequest) {
         if (request == null || blank(request.userName()) || blank(request.password())) {
             return new ApiResponse<>(400, "用户名和密码不能为空", null);
         }
@@ -49,7 +50,7 @@ public class AuthController {
     }
 
     @PostMapping("/auth/refresh")
-    public ApiResponse<AuthService.TokenPair> refresh(@RequestBody RefreshRequest request) {
+    public ApiResponse<AuthDtos.TokenPair> refresh(@RequestBody AuthDtos.RefreshRequest request) {
         if (request == null || blank(request.refreshToken())) return new ApiResponse<>(400, "刷新令牌不能为空", null);
         try {
             return ApiResponse.success(authService.refresh(request.refreshToken()));
@@ -59,13 +60,13 @@ public class AuthController {
     }
 
     @GetMapping("/user/info")
-    public ApiResponse<AuthService.UserInfo> userInfo(Authentication authentication) {
+    public ApiResponse<AuthDtos.UserInfo> userInfo(Authentication authentication) {
         return ApiResponse.success(authService.userInfo(principal(authentication).userId()));
     }
 
     @PostMapping("/auth/logout")
     public ApiResponse<Void> logout(Authentication authentication) {
-        AuthService.AuthenticatedUser user = principal(authentication);
+        AuthDtos.AuthenticatedUser user = principal(authentication);
         authService.logout(user.sessionId(), user.tokenId());
         return ApiResponse.success(null);
     }
@@ -101,8 +102,8 @@ public class AuthController {
         return ApiResponse.success(menuTree(authService.menus(principal(authentication).userId())));
     }
 
-    private AuthService.AuthenticatedUser principal(Authentication authentication) {
-        if (authentication != null && authentication.getPrincipal() instanceof AuthService.AuthenticatedUser user)
+    private AuthDtos.AuthenticatedUser principal(Authentication authentication) {
+        if (authentication != null && authentication.getPrincipal() instanceof AuthDtos.AuthenticatedUser user)
             return user;
         throw new AuthService.InvalidCredentialsException();
     }
@@ -150,9 +151,4 @@ public class AuthController {
         return forwarded == null || forwarded.isBlank() ? request.getRemoteAddr() : forwarded.split(",")[0].trim();
     }
 
-    public record LoginRequest(String userName, String password) {
-    }
-
-    public record RefreshRequest(String refreshToken) {
-    }
 }

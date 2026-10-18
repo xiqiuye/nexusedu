@@ -6,8 +6,8 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
-import com.xqy.nexusedu.application.system.model.SystemAuthModels;
-import com.xqy.nexusedu.infrastructure.system.persistence.entity.SysMenu;
+import com.xqy.nexusedu.common.dto.system.SystemAuthModels;
+import com.xqy.nexusedu.common.entity.system.SysMenu;
 
 @Mapper
 public interface SysAuthorizationMapper {

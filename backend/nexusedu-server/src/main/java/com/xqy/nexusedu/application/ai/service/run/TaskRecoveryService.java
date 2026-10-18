@@ -6,8 +6,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import com.xqy.nexusedu.application.ai.service.execution.TaskExecutionService;
-import com.xqy.nexusedu.infrastructure.ai.persistence.entity.AiTaskStep;
-import com.xqy.nexusedu.domain.ai.model.AiTask;
+import com.xqy.nexusedu.common.entity.ai.AiTaskStep;
+import com.xqy.nexusedu.common.model.ai.AiTask;
 
 /**
  * Reclaims expired leases and due retries after a process failure.

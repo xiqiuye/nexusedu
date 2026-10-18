@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.xqy.nexusedu.application.knowledge.model.KnowledgeIngestionCommand;
-import com.xqy.nexusedu.application.knowledge.model.KnowledgeIngestionResult;
+import com.xqy.nexusedu.common.dto.knowledge.KnowledgeIngestionCommand;
+import com.xqy.nexusedu.common.dto.knowledge.KnowledgeIngestionResult;
+import com.xqy.nexusedu.common.dto.system.AuthDtos;
 import com.xqy.nexusedu.application.knowledge.port.in.AiKnowledgeCommandService;
-import com.xqy.nexusedu.application.web.auth.AuthService;
 import com.xqy.nexusedu.common.dto.ApiResponse;
 import com.xqy.nexusedu.common.security.rpc.InternalCallSigner;
 
@@ -31,7 +31,7 @@ public class AiKnowledgeController {
     @PostMapping("/ingestions")
     public ApiResponse<KnowledgeIngestionResult> ingest(@RequestBody(required = false) KnowledgeIngestionCommand command,
                                                           Authentication authentication) {
-        if (!(authentication != null && authentication.getPrincipal() instanceof AuthService.AuthenticatedUser user)) {
+        if (!(authentication != null && authentication.getPrincipal() instanceof AuthDtos.AuthenticatedUser user)) {
             throw new IllegalArgumentException("unauthenticated request");
         }
         if (user.tenantId() == null || user.tenantId().isBlank()) throw new IllegalArgumentException("tenant is required");

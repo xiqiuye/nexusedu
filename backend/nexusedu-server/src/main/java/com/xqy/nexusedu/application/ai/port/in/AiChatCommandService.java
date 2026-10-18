@@ -1,8 +1,8 @@
 package com.xqy.nexusedu.application.ai.port.in;
 
 import java.util.Map;
-import com.xqy.nexusedu.application.ai.model.AiChatCommand;
-import com.xqy.nexusedu.application.ai.model.AiRunView;
+import com.xqy.nexusedu.common.dto.ai.AiChatCommand;
+import com.xqy.nexusedu.common.dto.ai.AiRunView;
 import com.xqy.nexusedu.common.security.rpc.InternalCallContext;
 
 public interface AiChatCommandService {

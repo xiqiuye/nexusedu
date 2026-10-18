@@ -24,12 +24,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import com.xqy.nexusedu.application.ai.model.AiChatCommand;
-import com.xqy.nexusedu.domain.ai.model.AiExecutionContext;
-import com.xqy.nexusedu.application.ai.model.AiRunView;
+import com.xqy.nexusedu.common.dto.ai.AiChatCommand;
+import com.xqy.nexusedu.common.dto.ai.AiChatDtos;
+import com.xqy.nexusedu.common.dto.system.AuthDtos;
+import com.xqy.nexusedu.common.model.ai.AiExecutionContext;
+import com.xqy.nexusedu.common.dto.ai.AiRunView;
 import com.xqy.nexusedu.application.ai.port.in.AiChatCommandService;
 import com.xqy.nexusedu.application.ai.port.in.AiOperationsService;
-import com.xqy.nexusedu.application.web.auth.AuthService;
 import com.xqy.nexusedu.common.dto.ApiResponse;
 import com.xqy.nexusedu.common.security.rpc.InternalCallContext;
 import com.xqy.nexusedu.common.security.rpc.InternalCallSigner;
@@ -54,18 +55,18 @@ public class AiChatController {
     }
 
     @PostMapping(value = "/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE + ";charset=UTF-8")
-    public SseEmitter chat(@RequestBody ChatRequest request, Authentication authentication) {
-        AuthService.AuthenticatedUser user = user(authentication);
+    public SseEmitter chat(@RequestBody AiChatDtos.ChatRequest request, Authentication authentication) {
+        AuthDtos.AuthenticatedUser user = user(authentication);
         Map<String, Object> receipt = submit(request, user);
         return events(String.valueOf(receipt.get("runId")), "0-0", authentication);
     }
 
     @PostMapping("/chat/runs")
-    public ApiResponse<Map<String, Object>> start(@RequestBody ChatRequest request, Authentication authentication) {
+    public ApiResponse<Map<String, Object>> start(@RequestBody AiChatDtos.ChatRequest request, Authentication authentication) {
         return ApiResponse.success(submit(request, user(authentication)));
     }
 
-    private Map<String, Object> submit(ChatRequest request, AuthService.AuthenticatedUser user) {
+    private Map<String, Object> submit(AiChatDtos.ChatRequest request, AuthDtos.AuthenticatedUser user) {
         if (request == null || request.question() == null || request.question().isBlank())
             throw new IllegalArgumentException("question must not be blank");
         if (request.question().length() > 4_000) throw new IllegalArgumentException("question exceeds 4000 characters");
@@ -81,7 +82,7 @@ public class AiChatController {
     public SseEmitter events(@PathVariable String runId, @RequestParam(defaultValue = "0-0") String after, Authentication authentication) {
         if (after.length() > 50 || !after.matches("[0-9]+-[0-9]+"))
             throw new IllegalArgumentException("无效的事件游标");
-        AuthService.AuthenticatedUser user = user(authentication);
+        AuthDtos.AuthenticatedUser user = user(authentication);
         Map<String, Object> delivery = operations.delivery(runId, internalCall(user, UUID.randomUUID().toString()));
         SseEmitter emitter = new SseEmitter(120_000L);
         AtomicBoolean closed = new AtomicBoolean();
@@ -94,7 +95,7 @@ public class AiChatController {
 
     @PostMapping("/runs/{runId}/cancel")
     public ApiResponse<Void> cancel(@PathVariable String runId, Authentication authentication) {
-        if (!(authentication != null && authentication.getPrincipal() instanceof AuthService.AuthenticatedUser user))
+        if (!(authentication != null && authentication.getPrincipal() instanceof AuthDtos.AuthenticatedUser user))
             throw new IllegalArgumentException("unauthenticated request");
         if (runId == null || runId.isBlank() || runId.length() > 64)
             throw new IllegalArgumentException("invalid runId");
@@ -104,7 +105,7 @@ public class AiChatController {
 
     @GetMapping("/runs/{runId}")
     public ApiResponse<AiRunView> getRun(@PathVariable String runId, Authentication authentication) {
-        if (!(authentication != null && authentication.getPrincipal() instanceof AuthService.AuthenticatedUser user)) {
+        if (!(authentication != null && authentication.getPrincipal() instanceof AuthDtos.AuthenticatedUser user)) {
             throw new IllegalArgumentException("unauthenticated request");
         }
         if (runId == null || runId.isBlank() || runId.length() > 64)
@@ -114,7 +115,7 @@ public class AiChatController {
     }
 
     @SuppressWarnings("unchecked")
-    private void relay(String runId, String key, String cursor, SseEmitter emitter, AtomicBoolean closed, AuthService.AuthenticatedUser user) {
+    private void relay(String runId, String key, String cursor, SseEmitter emitter, AtomicBoolean closed, AuthDtos.AuthenticatedUser user) {
         String lastId = cursor;
         long deadline = System.currentTimeMillis() + 115_000L;
         try {
@@ -152,9 +153,6 @@ public class AiChatController {
         }
     }
 
-    public record ChatRequest(Long conversationId, String question, String idempotencyKey) {
-    }
-
     // Explicit UTF-8 bytes also work with MVC's default ISO-8859-1 String converter.
     // Repeated data fields preserve multiline tokens and snapshots as one SSE frame.
     private SseEmitter.SseEventBuilder utf8Event(String name, Object data, String id) {
@@ -166,17 +164,17 @@ public class AiChatController {
         return event;
     }
 
-    private AuthService.AuthenticatedUser user(Authentication authentication) {
-        if (authentication != null && authentication.getPrincipal() instanceof AuthService.AuthenticatedUser user)
+    private AuthDtos.AuthenticatedUser user(Authentication authentication) {
+        if (authentication != null && authentication.getPrincipal() instanceof AuthDtos.AuthenticatedUser user)
             return user;
         throw new IllegalArgumentException("unauthenticated request");
     }
 
-    private InternalCallContext internalCall(AuthService.AuthenticatedUser user, String requestId) {
+    private InternalCallContext internalCall(AuthDtos.AuthenticatedUser user, String requestId) {
         return internalCallSigner.sign("nexusedu-web-bff", requiredTenant(user), user.userId(), user.sessionId(), requestId);
     }
 
-    private String requiredTenant(AuthService.AuthenticatedUser user) {
+    private String requiredTenant(AuthDtos.AuthenticatedUser user) {
         if (user.tenantId() == null || user.tenantId().isBlank())
             throw new IllegalArgumentException("tenant is required");
         return user.tenantId();

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-import com.xqy.nexusedu.domain.ai.model.AiExecutionContext;
+import com.xqy.nexusedu.common.model.ai.AiExecutionContext;
 
 @Service
 public class AiSourceStore {

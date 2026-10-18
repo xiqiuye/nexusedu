@@ -7,9 +7,9 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import com.xqy.nexusedu.infrastructure.ai.persistence.entity.AiToolExecuteLog;
-import com.xqy.nexusedu.domain.ai.model.AiTask;
-import com.xqy.nexusedu.domain.ai.model.AiTaskResult;
+import com.xqy.nexusedu.common.entity.ai.AiToolExecuteLog;
+import com.xqy.nexusedu.common.model.ai.AiTask;
+import com.xqy.nexusedu.common.model.ai.AiTaskResult;
 import com.xqy.nexusedu.infrastructure.ai.persistence.mapper.AiToolExecuteLogMapper;
 import com.xqy.nexusedu.infrastructure.ai.security.AiSafetyPolicy;
 

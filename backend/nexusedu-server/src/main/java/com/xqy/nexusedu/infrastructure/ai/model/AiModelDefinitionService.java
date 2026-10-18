@@ -3,7 +3,7 @@ package com.xqy.nexusedu.infrastructure.ai.model;
 import java.util.Collections;
 import java.util.List;
 import org.springframework.stereotype.Service;
-import com.xqy.nexusedu.infrastructure.ai.persistence.entity.AiModelDefinition;
+import com.xqy.nexusedu.common.entity.ai.AiModelDefinition;
 import com.xqy.nexusedu.infrastructure.ai.persistence.mapper.AiModelDefinitionMapper;
 
 /** Loads model definitions from the database. */

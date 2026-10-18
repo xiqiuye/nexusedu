@@ -9,6 +9,7 @@ import com.xqy.nexusedu.application.ai.port.in.AiOperationsService;
 import com.xqy.nexusedu.application.knowledge.port.in.AiKnowledgeCommandService;
 import com.xqy.nexusedu.common.dto.ApiResponse;
 import com.xqy.nexusedu.common.dto.PageResult;
+import com.xqy.nexusedu.common.dto.ai.AiOperationsDtos;
 import com.xqy.nexusedu.infrastructure.system.RpcCaller;
 
 @RestController
@@ -25,7 +26,7 @@ public class AiOperationsController {
     }
 
     @PostMapping("/conversations")
-    public ApiResponse<Map<String, Object>> createConversation(@RequestBody ConversationInput input, Authentication auth) {
+    public ApiResponse<Map<String, Object>> createConversation(@RequestBody AiOperationsDtos.ConversationInput input, Authentication auth) {
         return ApiResponse.success(queries.createConversation(input.title(), caller.context(auth)));
     }
 
@@ -41,24 +42,15 @@ public class AiOperationsController {
     }
 
     @PutMapping("/conversations/retention")
-    public ApiResponse<Void> retention(@RequestBody RetentionInput input, Authentication auth) {
+    public ApiResponse<Void> retention(@RequestBody AiOperationsDtos.RetentionInput input, Authentication auth) {
         queries.updateRetention(input.retentionDays(), caller.context(auth));
         return ApiResponse.success(null);
     }
 
     @PutMapping("/conversations/{id}/retention")
-    public ApiResponse<Void> keep(@PathVariable Long id, @RequestBody KeepInput input, Authentication auth) {
+    public ApiResponse<Void> keep(@PathVariable Long id, @RequestBody AiOperationsDtos.KeepInput input, Authentication auth) {
         queries.keepConversation(id, input.retainUntil(), caller.context(auth));
         return ApiResponse.success(null);
-    }
-
-    public record ConversationInput(String title) {
-    }
-
-    public record RetentionInput(int retentionDays) {
-    }
-
-    public record KeepInput(String retainUntil) {
     }
 
     @GetMapping("/manage/{resource}")
@@ -81,11 +73,9 @@ public class AiOperationsController {
     }
 
     @PostMapping("/knowledge/versions/{id}/activate")
-    public ApiResponse<Void> activate(@PathVariable Long id, @RequestBody IndexRevision input, Authentication auth) {
+    public ApiResponse<Void> activate(@PathVariable Long id, @RequestBody AiOperationsDtos.IndexRevision input, Authentication auth) {
         knowledge.activateIndex(id, input.indexRevision(), caller.context(auth));
         return ApiResponse.success(null);
     }
 
-    public record IndexRevision(int indexRevision) {
-    }
 }

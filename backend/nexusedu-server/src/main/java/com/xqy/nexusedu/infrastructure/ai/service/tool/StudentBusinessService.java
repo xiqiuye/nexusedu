@@ -7,11 +7,11 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.xqy.nexusedu.application.student.service.StudentService;
-import com.xqy.nexusedu.application.student.model.StudentData;
-import com.xqy.nexusedu.domain.ai.model.AiTask;
-import com.xqy.nexusedu.domain.ai.model.AiTaskResult;
-import com.xqy.nexusedu.domain.ai.model.QueryCriteria;
-import com.xqy.nexusedu.domain.ai.model.QueryFilterNode;
+import com.xqy.nexusedu.common.dto.student.StudentData;
+import com.xqy.nexusedu.common.model.ai.AiTask;
+import com.xqy.nexusedu.common.model.ai.AiTaskResult;
+import com.xqy.nexusedu.common.model.ai.QueryCriteria;
+import com.xqy.nexusedu.common.model.ai.QueryFilterNode;
 
 /** AI-facing adapter for the student domain. */
 @Service

@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
-import com.xqy.nexusedu.application.web.auth.AuthService;
+import com.xqy.nexusedu.common.dto.system.AuthDtos;
 import com.xqy.nexusedu.common.security.rpc.InternalCallContext;
 import com.xqy.nexusedu.common.security.rpc.InternalCallSigner;
 
@@ -19,7 +19,7 @@ public class RpcCaller {
     }
 
     public InternalCallContext context(Authentication authentication) {
-        if (authentication == null || !(authentication.getPrincipal() instanceof AuthService.AuthenticatedUser user))
+        if (authentication == null || !(authentication.getPrincipal() instanceof AuthDtos.AuthenticatedUser user))
             throw new AccessDeniedException("Unauthenticated");
         return signer.sign("nexusedu-web-bff", user.tenantId(), user.userId(), user.sessionId(), UUID.randomUUID().toString());
     }

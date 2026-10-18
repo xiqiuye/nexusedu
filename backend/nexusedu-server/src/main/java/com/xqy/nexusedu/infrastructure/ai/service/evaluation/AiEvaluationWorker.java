@@ -9,7 +9,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import com.xqy.nexusedu.domain.ai.model.AiExecutionContext;
+import com.xqy.nexusedu.common.model.ai.AiExecutionContext;
 import com.xqy.nexusedu.application.ai.port.in.AiEvaluationService;
 import com.xqy.nexusedu.application.system.port.in.SystemManagementService;
 import com.xqy.nexusedu.application.ai.service.chat.AiConversationLifecycle;

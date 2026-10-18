@@ -2,7 +2,7 @@ package com.xqy.nexusedu.infrastructure.ai.service.prompt;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.stereotype.Service;
-import com.xqy.nexusedu.infrastructure.ai.persistence.entity.AiPromptTemplate;
+import com.xqy.nexusedu.common.entity.ai.AiPromptTemplate;
 import com.xqy.nexusedu.infrastructure.ai.persistence.mapper.AiPromptTemplateMapper;
 
 /** Loads enabled prompt templates from the database. */

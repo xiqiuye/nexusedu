@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
-import com.xqy.nexusedu.infrastructure.system.persistence.entity.SysUserSession;
+import com.xqy.nexusedu.common.entity.system.SysUserSession;
 
 @Mapper
 public interface SysUserSessionMapper extends BaseMapper<SysUserSession> {

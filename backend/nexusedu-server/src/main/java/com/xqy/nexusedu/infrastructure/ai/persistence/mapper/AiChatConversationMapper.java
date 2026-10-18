@@ -5,7 +5,7 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
-import com.xqy.nexusedu.infrastructure.ai.persistence.entity.AiChatConversation;
+import com.xqy.nexusedu.common.entity.ai.AiChatConversation;
 
 @Mapper
 public interface AiChatConversationMapper extends BaseMapper<AiChatConversation> {

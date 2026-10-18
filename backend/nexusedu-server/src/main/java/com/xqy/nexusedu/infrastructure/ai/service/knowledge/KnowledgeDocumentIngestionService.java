@@ -13,6 +13,8 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 import com.xqy.nexusedu.infrastructure.ai.service.observation.AiObservationService;
+import com.xqy.nexusedu.common.dto.knowledge.KnowledgeIngestionDtos.IngestionRequest;
+import com.xqy.nexusedu.common.dto.knowledge.KnowledgeIngestionDtos.IngestionResult;
 
 /** Reads MySQL staging details, creates embeddings, and upserts them into pgvector. */
 @Service
@@ -182,15 +184,46 @@ public class KnowledgeDocumentIngestionService {
         return identifier;
     }
 
-    public record IngestionRequest(Long knowledgeBaseId, Long documentVersionId,
-                                   Integer limit, Integer indexRevision, String tenantId, String jobId) {
-        public IngestionRequest(Long knowledgeBaseId, Long documentVersionId, Integer limit, Integer indexRevision, String tenantId) {
-            this(knowledgeBaseId, documentVersionId, limit, indexRevision, tenantId, null);
+    private static class StagingDetail {
+        private Long knowledgeBaseId;
+        private Long documentId;
+        private String documentNo;
+        private Long documentVersionId;
+        private Integer chunkNo;
+        private String content;
+        private String metadata;
+
+        StagingDetail(Long knowledgeBaseId, Long documentId, String documentNo, Long documentVersionId,
+                      Integer chunkNo, String content, String metadata) {
+            this.knowledgeBaseId = knowledgeBaseId;
+            this.documentId = documentId;
+            this.documentNo = documentNo;
+            this.documentVersionId = documentVersionId;
+            this.chunkNo = chunkNo;
+            this.content = content;
+            this.metadata = metadata;
         }
+
+        public Long getKnowledgeBaseId() { return knowledgeBaseId; }
+        public void setKnowledgeBaseId(Long knowledgeBaseId) { this.knowledgeBaseId = knowledgeBaseId; }
+        public Long getDocumentId() { return documentId; }
+        public void setDocumentId(Long documentId) { this.documentId = documentId; }
+        public String getDocumentNo() { return documentNo; }
+        public void setDocumentNo(String documentNo) { this.documentNo = documentNo; }
+        public Long getDocumentVersionId() { return documentVersionId; }
+        public void setDocumentVersionId(Long documentVersionId) { this.documentVersionId = documentVersionId; }
+        public Integer getChunkNo() { return chunkNo; }
+        public void setChunkNo(Integer chunkNo) { this.chunkNo = chunkNo; }
+        public String getContent() { return content; }
+        public void setContent(String content) { this.content = content; }
+        public String getMetadata() { return metadata; }
+        public void setMetadata(String metadata) { this.metadata = metadata; }
+        public Long knowledgeBaseId() { return knowledgeBaseId; }
+        public Long documentId() { return documentId; }
+        public String documentNo() { return documentNo; }
+        public Long documentVersionId() { return documentVersionId; }
+        public Integer chunkNo() { return chunkNo; }
+        public String content() { return content; }
+        public String metadata() { return metadata; }
     }
-
-    public record IngestionResult(int selected, int imported, int indexRevision) { }
-
-    private record StagingDetail(Long knowledgeBaseId, Long documentId, String documentNo,
-                                 Long documentVersionId, Integer chunkNo, String content, String metadata) { }
 }

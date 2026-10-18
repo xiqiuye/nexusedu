@@ -1,6 +1,5 @@
 package com.xqy.nexusedu.interfaces.web.rest;
 
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import com.xqy.nexusedu.application.system.port.in.SystemManagementService;
 import com.xqy.nexusedu.common.dto.ApiResponse;
 import com.xqy.nexusedu.common.dto.PageResult;
+import com.xqy.nexusedu.common.dto.system.SystemManagementDtos;
 import com.xqy.nexusedu.infrastructure.system.RpcCaller;
 
 @RestController
@@ -50,13 +50,13 @@ public class SystemManagementController {
     }
 
     @PutMapping("/users/{id}/roles")
-    public ApiResponse<Void> assignRoles(@PathVariable Long id, @RequestBody UserRoles input, Authentication auth) {
+    public ApiResponse<Void> assignRoles(@PathVariable Long id, @RequestBody SystemManagementDtos.UserRoles input, Authentication auth) {
         management.assignUserRoles(id, input.roleIds(), caller.context(auth));
         return ApiResponse.success(null);
     }
 
     @PutMapping("/roles/{id}/permissions")
-    public ApiResponse<Void> grant(@PathVariable Long id, @RequestBody RolePermissions input, Authentication auth) {
+    public ApiResponse<Void> grant(@PathVariable Long id, @RequestBody SystemManagementDtos.RolePermissions input, Authentication auth) {
         management.grantRole(id, input.menuIds(), input.buttonIds(), caller.context(auth));
         return ApiResponse.success(null);
     }
@@ -67,9 +67,4 @@ public class SystemManagementController {
         return ApiResponse.success(null);
     }
 
-    public record UserRoles(List<Long> roleIds) {
-    }
-
-    public record RolePermissions(List<Long> menuIds, List<Long> buttonIds) {
-    }
 }

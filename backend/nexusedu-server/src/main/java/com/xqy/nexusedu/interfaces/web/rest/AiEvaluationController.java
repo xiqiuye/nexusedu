@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import com.xqy.nexusedu.application.ai.port.in.AiEvaluationService;
 import com.xqy.nexusedu.common.dto.ApiResponse;
 import com.xqy.nexusedu.common.dto.PageResult;
+import com.xqy.nexusedu.common.dto.ai.AiEvaluationDtos;
 import com.xqy.nexusedu.infrastructure.system.RpcCaller;
 
 @RestController
@@ -32,7 +33,7 @@ public class AiEvaluationController {
     }
 
     @PutMapping("/cases/{id}/enabled")
-    public ApiResponse<Void> enable(@PathVariable Long id, @RequestBody Enable input, Authentication auth) {
+    public ApiResponse<Void> enable(@PathVariable Long id, @RequestBody AiEvaluationDtos.Enable input, Authentication auth) {
         service.enableCase(id, input.enabled(), caller.context(auth));
         return ApiResponse.success(null);
     }
@@ -53,6 +54,4 @@ public class AiEvaluationController {
         return ApiResponse.success(null);
     }
 
-    public record Enable(boolean enabled) {
-    }
 }

@@ -209,5 +209,16 @@ public class AiMetricsServiceImpl implements AiMetricsService {
         args.add(size); args.add(((long) current - 1) * size);
         return new PageResult(rows("SELECT " + columns + " FROM " + table + where + " ORDER BY " + order + " LIMIT ? OFFSET ?", args.toArray()), current, size, total == null ? 0 : total);
     }
-    record Window(LocalDateTime start, LocalDateTime end) { }
+    static class Window {
+        private LocalDateTime start;
+        private LocalDateTime end;
+        Window() { }
+        Window(LocalDateTime start, LocalDateTime end) { this.start = start; this.end = end; }
+        LocalDateTime getStart() { return start; }
+        void setStart(LocalDateTime start) { this.start = start; }
+        LocalDateTime getEnd() { return end; }
+        void setEnd(LocalDateTime end) { this.end = end; }
+        LocalDateTime start() { return start; }
+        LocalDateTime end() { return end; }
+    }
 }

@@ -2,12 +2,12 @@ package com.xqy.nexusedu.infrastructure.knowledge.port;
 
 import java.util.List;
 
-import com.xqy.nexusedu.application.knowledge.model.KnowledgeVectorQuery;
-import com.xqy.nexusedu.infrastructure.knowledge.persistence.entity.AiKnowledgeBase;
-import com.xqy.nexusedu.infrastructure.knowledge.persistence.entity.AiKnowledgeDocument;
-import com.xqy.nexusedu.infrastructure.knowledge.persistence.entity.AiKnowledgeDocumentVersion;
-import com.xqy.nexusedu.infrastructure.knowledge.persistence.entity.AiKnowledgeIngestionJob;
-import com.xqy.nexusedu.infrastructure.knowledge.persistence.entity.AiknowledgeChunk;
+import com.xqy.nexusedu.common.dto.knowledge.KnowledgeVectorQuery;
+import com.xqy.nexusedu.common.entity.knowledge.AiKnowledgeBase;
+import com.xqy.nexusedu.common.entity.knowledge.AiKnowledgeDocument;
+import com.xqy.nexusedu.common.entity.knowledge.AiKnowledgeDocumentVersion;
+import com.xqy.nexusedu.common.entity.knowledge.AiKnowledgeIngestionJob;
+import com.xqy.nexusedu.common.entity.knowledge.AiknowledgeChunk;
 import com.xqy.nexusedu.common.security.rpc.InternalCallContext;
 
 

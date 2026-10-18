@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import com.xqy.nexusedu.domain.ai.model.AiTask;
-import com.xqy.nexusedu.domain.ai.model.AiTaskResult;
-import com.xqy.nexusedu.domain.ai.model.QueryCriteria;
-import com.xqy.nexusedu.domain.ai.model.ToolSource;
+import com.xqy.nexusedu.common.model.ai.AiTask;
+import com.xqy.nexusedu.common.model.ai.AiTaskResult;
+import com.xqy.nexusedu.common.model.ai.QueryCriteria;
+import com.xqy.nexusedu.common.model.ai.ToolSource;
 
 /**
  * Enforces the bounded, untrusted-data boundary around tools and model prompts.

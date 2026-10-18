@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-import com.xqy.nexusedu.domain.ai.model.AiExecutionContext;
+import com.xqy.nexusedu.common.model.ai.AiExecutionContext;
 import com.xqy.nexusedu.infrastructure.ai.service.governance.AiAdmissionService;
 
 /** Durable observations. Failure to write telemetry must never change a business result. */
@@ -29,11 +29,40 @@ public class AiObservationService {
 
     public AiObservationService(JdbcTemplate jdbc) { this.jdbc = jdbc; }
 
-    public record Scope(String tenantId, String requestId, String runId, String jobId,Long userId,Long sessionId) {
+    public static class Scope {
+        private String tenantId;
+        private String requestId;
+        private String runId;
+        private String jobId;
+        private Long userId;
+        private Long sessionId;
+        public Scope() { }
         public Scope(String tenantId,String requestId,String runId,String jobId) {this(tenantId,requestId,runId,jobId,null,null);}
+        public Scope(String tenantId, String requestId, String runId, String jobId, Long userId, Long sessionId) {
+            this.tenantId = tenantId; this.requestId = requestId; this.runId = runId; this.jobId = jobId;
+            this.userId = userId; this.sessionId = sessionId;
+        }
         public static Scope chat(AiExecutionContext context) {
             return context == null ? null : new Scope(context.getTenantId(), context.getRequestId(), context.getRunId(), null,context.getUserId(),context.getSessionId());
         }
+        public String getTenantId() { return tenantId; }
+        public void setTenantId(String tenantId) { this.tenantId = tenantId; }
+        public String getRequestId() { return requestId; }
+        public void setRequestId(String requestId) { this.requestId = requestId; }
+        public String getRunId() { return runId; }
+        public void setRunId(String runId) { this.runId = runId; }
+        public String getJobId() { return jobId; }
+        public void setJobId(String jobId) { this.jobId = jobId; }
+        public Long getUserId() { return userId; }
+        public void setUserId(Long userId) { this.userId = userId; }
+        public Long getSessionId() { return sessionId; }
+        public void setSessionId(Long sessionId) { this.sessionId = sessionId; }
+        public String tenantId() { return tenantId; }
+        public String requestId() { return requestId; }
+        public String runId() { return runId; }
+        public String jobId() { return jobId; }
+        public Long userId() { return userId; }
+        public Long sessionId() { return sessionId; }
     }
 
     public Call model(Scope scope, String operation, String provider, String model) {

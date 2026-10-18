@@ -2,8 +2,8 @@ package com.xqy.nexusedu.application.student.service;
 
 import java.util.List;
 
-import com.xqy.nexusedu.application.student.model.StudentCommand;
-import com.xqy.nexusedu.application.student.model.StudentData;
+import com.xqy.nexusedu.common.dto.student.StudentCommand;
+import com.xqy.nexusedu.common.dto.student.StudentData;
 
 /**
  * Application port for student use cases.

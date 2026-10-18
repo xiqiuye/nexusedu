@@ -4,14 +4,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.*;
 import java.util.regex.Pattern;
+import com.xqy.nexusedu.common.dto.ai.AiEvaluationScore;
 
 /** Deterministic golden-set evaluation, not an LLM judge. */
 public final class AiEvaluationScorer {
     private static final ObjectMapper JSON=new ObjectMapper();
     private static final Pattern CITATION=Pattern.compile("\\[([^\\[\\]\\s#]+)#[^\\[\\]\\s]+\\]");
     private AiEvaluationScorer() { }
-    public record Score(int planCorrect,int toolCorrect,Integer ragHit,int citedCount,int correctCitedCount,Boolean refused,Boolean refusalCorrect) { }
-    public static Score score(Map<String,Object> sample,String actualPlan,String answer,List<Map<String,Object>> sources) {
+    public static AiEvaluationScore score(Map<String,Object> sample,String actualPlan,String answer,List<Map<String,Object>> sources) {
         JsonNode expected=tree(sample.get("expectedPlan")),actual=tree(actualPlan==null?"[]":actualPlan);
         int plan=expected.isArray() && actual.isArray() && expected.size()==actual.size()?1:0;
         if(plan==1)for(int i=0;i<expected.size();i++)if(!contains(actual.get(i),expected.get(i))) {plan=0;break;}
@@ -25,7 +25,7 @@ public final class AiEvaluationScorer {
         int correct=0;for(String citation:citations)if(retrieved.contains(citation) && goldSources.contains(citation))correct++;
         Boolean refusal=answer==null?null:answer.stripLeading().startsWith("【拒答】");
         boolean expectedRefusal=Boolean.TRUE.equals(sample.get("expectedRefusal"));
-        return new Score(plan,tools.equals(goldTools)?1:0,rag,citations.size(),correct,refusal,refusal==null?null:refusal==expectedRefusal);
+        return new AiEvaluationScore(plan,tools.equals(goldTools)?1:0,rag,citations.size(),correct,refusal,refusal==null?null:refusal==expectedRefusal);
     }
     private static JsonNode tree(Object value) {
         try{return value instanceof String text?JSON.readTree(text):JSON.valueToTree(value);}catch(Exception error){throw new IllegalArgumentException("无效评测 JSON",error);}

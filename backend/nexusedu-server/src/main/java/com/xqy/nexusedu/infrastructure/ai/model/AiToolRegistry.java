@@ -9,12 +9,12 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import com.xqy.nexusedu.application.ai.service.execution.AiToolDefinitionProvider;
-import com.xqy.nexusedu.application.ai.service.execution.AiToolExecutor;
-import com.xqy.nexusedu.infrastructure.ai.persistence.entity.AiToolDefinition;
-import com.xqy.nexusedu.infrastructure.ai.persistence.entity.AiToolExecuteLog;
-import com.xqy.nexusedu.domain.ai.model.AiTask;
-import com.xqy.nexusedu.domain.ai.model.AiTaskResult;
+import com.xqy.nexusedu.application.ai.port.out.AiToolDefinitionProvider;
+import com.xqy.nexusedu.application.ai.port.out.AiToolExecutor;
+import com.xqy.nexusedu.common.entity.ai.AiToolDefinition;
+import com.xqy.nexusedu.common.entity.ai.AiToolExecuteLog;
+import com.xqy.nexusedu.common.model.ai.AiTask;
+import com.xqy.nexusedu.common.model.ai.AiTaskResult;
 import com.xqy.nexusedu.infrastructure.ai.service.governance.AiGovernanceRuntime;
 import com.xqy.nexusedu.infrastructure.ai.service.log.AiToolExecuteLogService;
 

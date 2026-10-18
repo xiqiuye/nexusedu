@@ -16,8 +16,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-import com.xqy.nexusedu.application.knowledge.model.KnowledgeVectorQuery;
-import com.xqy.nexusedu.infrastructure.knowledge.persistence.entity.AiknowledgeChunk;
+import com.xqy.nexusedu.common.dto.knowledge.KnowledgeVectorQuery;
+import com.xqy.nexusedu.common.entity.knowledge.AiknowledgeChunk;
 
 /**
  * Small Milvus REST v2 adapter. The SDK is deliberately kept out of the API module.

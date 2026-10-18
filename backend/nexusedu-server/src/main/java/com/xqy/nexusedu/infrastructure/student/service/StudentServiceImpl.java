@@ -6,10 +6,10 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.xqy.nexusedu.application.student.model.StudentCommand;
-import com.xqy.nexusedu.application.student.model.StudentData;
+import com.xqy.nexusedu.common.dto.student.StudentCommand;
+import com.xqy.nexusedu.common.dto.student.StudentData;
 import com.xqy.nexusedu.application.student.service.StudentService;
-import com.xqy.nexusedu.infrastructure.student.persistence.entity.Student;
+import com.xqy.nexusedu.common.entity.student.Student;
 import com.xqy.nexusedu.infrastructure.student.persistence.mapper.StudentMapper;
 
 /** Persistence-backed implementation of the student application port. */

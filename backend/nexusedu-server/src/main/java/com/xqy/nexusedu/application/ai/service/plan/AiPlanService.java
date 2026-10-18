@@ -2,8 +2,8 @@ package com.xqy.nexusedu.application.ai.service.plan;
 
 import java.util.List;
 import org.springframework.stereotype.Component;
-import com.xqy.nexusedu.domain.ai.model.AiConstants;
-import com.xqy.nexusedu.domain.ai.model.AiTask;
+import com.xqy.nexusedu.common.constant.ai.AiConstants;
+import com.xqy.nexusedu.common.model.ai.AiTask;
 import com.xqy.nexusedu.infrastructure.ai.service.chat.AiChatService;
 
 /** Compatibility facade for existing callers; lifecycle work lives in dedicated services. */

@@ -13,8 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import com.xqy.nexusedu.infrastructure.ai.persistence.entity.AiModelDefinition;
-import com.xqy.nexusedu.domain.ai.model.AiConstants;
+import com.xqy.nexusedu.common.entity.ai.AiModelDefinition;
+import com.xqy.nexusedu.common.constant.ai.AiConstants;
 
 /** Runtime registry of enabled model definitions and their provider handles. */
 @Component

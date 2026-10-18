@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
-import com.xqy.nexusedu.infrastructure.ai.persistence.entity.AiChatMessage;
+import com.xqy.nexusedu.common.entity.ai.AiChatMessage;
 
 @Mapper
 public interface AiChatMessageMapper extends BaseMapper<AiChatMessage> {

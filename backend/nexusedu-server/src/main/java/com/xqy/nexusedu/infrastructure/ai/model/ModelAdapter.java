@@ -1,6 +1,6 @@
 package com.xqy.nexusedu.infrastructure.ai.model;
 
-import com.xqy.nexusedu.infrastructure.ai.persistence.entity.AiModelDefinition;
+import com.xqy.nexusedu.common.entity.ai.AiModelDefinition;
 
 /** Provider adapter that turns a model definition into LangChain4j models. */
 public interface ModelAdapter {

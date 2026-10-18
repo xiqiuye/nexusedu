@@ -13,7 +13,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import com.xqy.nexusedu.application.web.auth.AuthService;
+import com.xqy.nexusedu.application.system.auth.AuthService;
+import com.xqy.nexusedu.common.dto.system.AuthDtos;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -29,7 +30,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = bearerToken(request);
         if (token != null) {
             try {
-                AuthService.AuthenticatedUser authenticated = authService.authenticate(token);
+                AuthDtos.AuthenticatedUser authenticated = authService.authenticate(token);
                 List<SimpleGrantedAuthority> authorities = new ArrayList<>();
                 authenticated.roles().forEach(role -> authorities.add(new SimpleGrantedAuthority("ROLE_" + role)));
                 authenticated.authorities().forEach(authority -> authorities.add(new SimpleGrantedAuthority(authority)));

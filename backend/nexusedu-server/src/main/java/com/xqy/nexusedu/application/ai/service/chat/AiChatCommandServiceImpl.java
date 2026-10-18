@@ -8,13 +8,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import com.xqy.nexusedu.application.ai.model.AiChatCommand;
-import com.xqy.nexusedu.domain.ai.model.AiExecutionContext;
-import com.xqy.nexusedu.application.ai.model.AiRunView;
+import com.xqy.nexusedu.common.dto.ai.AiChatCommand;
+import com.xqy.nexusedu.common.model.ai.AiExecutionContext;
+import com.xqy.nexusedu.common.dto.ai.AiRunView;
 import com.xqy.nexusedu.application.ai.port.in.AiChatCommandService;
 import com.xqy.nexusedu.application.ai.port.in.AiOperationsService;
 import com.xqy.nexusedu.application.ai.service.run.AiTaskRunService;
-import com.xqy.nexusedu.infrastructure.ai.persistence.entity.AiTaskRun;
+import com.xqy.nexusedu.common.entity.ai.AiTaskRun;
 import com.xqy.nexusedu.common.security.rpc.InternalCallContext;
 import com.xqy.nexusedu.common.security.rpc.InternalCallSigner;
 

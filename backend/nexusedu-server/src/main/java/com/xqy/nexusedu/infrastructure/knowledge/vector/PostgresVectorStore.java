@@ -16,8 +16,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.stereotype.Component;
-import com.xqy.nexusedu.application.knowledge.model.KnowledgeVectorQuery;
-import com.xqy.nexusedu.infrastructure.knowledge.persistence.entity.AiknowledgeChunk;
+import com.xqy.nexusedu.common.dto.knowledge.KnowledgeVectorQuery;
+import com.xqy.nexusedu.common.entity.knowledge.AiknowledgeChunk;
 
 /**
  * pgvector implementation for installations that keep chunks in PostgreSQL.

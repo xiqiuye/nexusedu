@@ -7,8 +7,8 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import com.xqy.nexusedu.domain.ai.model.AiExecutionContext;
-import com.xqy.nexusedu.infrastructure.ai.persistence.entity.AiRequestLog;
+import com.xqy.nexusedu.common.model.ai.AiExecutionContext;
+import com.xqy.nexusedu.common.entity.ai.AiRequestLog;
 import com.xqy.nexusedu.infrastructure.ai.persistence.mapper.AiRequestLogMapper;
 import com.xqy.nexusedu.infrastructure.ai.security.AiSafetyPolicy;
 

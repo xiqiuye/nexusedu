@@ -7,8 +7,8 @@ import java.util.Locale;
 
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
-import com.xqy.nexusedu.infrastructure.ai.persistence.entity.AiModelDefinition;
-import com.xqy.nexusedu.domain.ai.model.AiConstants;
+import com.xqy.nexusedu.common.entity.ai.AiModelDefinition;
+import com.xqy.nexusedu.common.constant.ai.AiConstants;
 
 /**
  * Adapter for OpenAI and OpenAI-compatible providers such as DeepSeek.

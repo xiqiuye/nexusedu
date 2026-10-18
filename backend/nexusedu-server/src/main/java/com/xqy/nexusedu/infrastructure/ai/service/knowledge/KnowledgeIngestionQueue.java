@@ -10,8 +10,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import com.xqy.nexusedu.application.knowledge.model.KnowledgeIngestionCommand;
-import com.xqy.nexusedu.application.knowledge.model.KnowledgeIngestionResult;
+import com.xqy.nexusedu.common.dto.knowledge.KnowledgeIngestionCommand;
+import com.xqy.nexusedu.common.dto.knowledge.KnowledgeIngestionResult;
+import com.xqy.nexusedu.common.dto.knowledge.KnowledgeIngestionDtos.IngestionRequest;
 import com.xqy.nexusedu.application.system.port.in.SystemManagementService;
 import com.xqy.nexusedu.common.exception.ManagementConflictException;
 import com.xqy.nexusedu.common.exception.ManagementNotFoundException;
@@ -94,7 +95,7 @@ public class KnowledgeIngestionQueue {
             int offset = ((Number) job.get("processed_chunks")).intValue();
             while (offset < count) {
                 if (!renew(id, token)) { cancelIfOwned(id, token); return; }
-                var result = ingestion.ingestAfter(new KnowledgeDocumentIngestionService.IngestionRequest(null, version, 32, revision, tenant, String.valueOf(id)), offset);
+                var result = ingestion.ingestAfter(new IngestionRequest(null, version, 32, revision, tenant, String.valueOf(id)), offset);
                 if (result.imported() == 0) throw new IllegalStateException("分块序号或内容不完整");
                 offset += result.imported();
                 if (jdbc.update("UPDATE ai_knowledge_ingestion_job SET processed_chunks=?,progress=?,lease_expire_time=DATE_ADD(CURRENT_TIMESTAMP(3),INTERVAL 120 SECOND) WHERE id=? AND worker_token=? AND status='RUNNING' AND cancel_requested=0", offset, Math.min(99, offset * 100 / count), id, token) != 1) { cancelIfOwned(id, token); return; }

@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.connection.stream.StreamRecords;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
-import com.xqy.nexusedu.application.ai.port.chat.AiStreamEventPublisher;
+import com.xqy.nexusedu.application.ai.port.out.AiStreamEventPublisher;
 
 /** Delivers AI run events through Redis Streams for independently deployed consumers. */
 @Component

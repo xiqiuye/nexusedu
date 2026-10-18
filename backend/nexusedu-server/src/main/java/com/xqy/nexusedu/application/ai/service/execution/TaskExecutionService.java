@@ -16,11 +16,11 @@ import java.util.concurrent.TimeoutException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.xqy.nexusedu.domain.ai.model.AiExecutionContext;
+import com.xqy.nexusedu.common.model.ai.AiExecutionContext;
 import com.xqy.nexusedu.application.ai.service.run.AiTaskRunService;
-import com.xqy.nexusedu.infrastructure.ai.persistence.entity.AiTaskStep;
-import com.xqy.nexusedu.domain.ai.model.AiTask;
-import com.xqy.nexusedu.domain.ai.model.AiTaskResult;
+import com.xqy.nexusedu.common.entity.ai.AiTaskStep;
+import com.xqy.nexusedu.common.model.ai.AiTask;
+import com.xqy.nexusedu.common.model.ai.AiTaskResult;
 import com.xqy.nexusedu.infrastructure.ai.model.AiToolRegistry;
 import com.xqy.nexusedu.infrastructure.ai.security.AiSafetyPolicy;
 import com.xqy.nexusedu.infrastructure.ai.service.observation.AiObservationService;

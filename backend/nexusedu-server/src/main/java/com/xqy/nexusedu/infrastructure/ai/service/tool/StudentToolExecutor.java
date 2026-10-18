@@ -2,9 +2,9 @@ package com.xqy.nexusedu.infrastructure.ai.service.tool;
 
 import java.util.Locale;
 import org.springframework.stereotype.Component;
-import com.xqy.nexusedu.application.ai.service.execution.AiToolExecutor;
-import com.xqy.nexusedu.domain.ai.model.AiTask;
-import com.xqy.nexusedu.domain.ai.model.AiTaskResult;
+import com.xqy.nexusedu.application.ai.port.out.AiToolExecutor;
+import com.xqy.nexusedu.common.model.ai.AiTask;
+import com.xqy.nexusedu.common.model.ai.AiTaskResult;
 
 /** Executes tools belonging to the student domain. */
 @Component

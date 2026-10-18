@@ -2,7 +2,7 @@ package com.xqy.nexusedu.application.system.port.in;
 
 import java.util.List;
 
-import com.xqy.nexusedu.application.system.model.SystemAuthModels;
+import com.xqy.nexusedu.common.dto.system.SystemAuthModels;
 
 public interface SystemAuthService {
     SystemAuthModels.TokenPair login(String username, String password, String loginIp, String userAgent);

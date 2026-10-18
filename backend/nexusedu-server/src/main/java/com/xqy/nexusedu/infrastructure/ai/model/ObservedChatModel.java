@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.xqy.nexusedu.domain.ai.model.AiExecutionContext;
+import com.xqy.nexusedu.common.model.ai.AiExecutionContext;
 import com.xqy.nexusedu.infrastructure.ai.service.observation.AiObservationService;
 
 /**

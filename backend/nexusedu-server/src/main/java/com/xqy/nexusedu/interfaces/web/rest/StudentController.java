@@ -5,9 +5,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import com.xqy.nexusedu.interfaces.web.rest.dto.student.StudentRequest;
-import com.xqy.nexusedu.interfaces.web.rest.dto.student.StudentResponse;
-import com.xqy.nexusedu.application.student.model.StudentCommand;
+import com.xqy.nexusedu.common.dto.student.StudentRequest;
+import com.xqy.nexusedu.common.dto.student.StudentResponse;
+import com.xqy.nexusedu.common.dto.student.StudentCommand;
 import com.xqy.nexusedu.application.student.service.StudentService;
 import com.xqy.nexusedu.common.dto.ApiResponse;
 
