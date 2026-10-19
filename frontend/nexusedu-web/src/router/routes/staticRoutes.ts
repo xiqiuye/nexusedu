@@ -11,6 +11,18 @@ import { AppRouteRecordRaw } from '@/utils/router'
  * 2、静态路由不管是否登录都可以访问
  */
 export const staticRoutes: AppRouteRecordRaw[] = [
+  {
+    path: '/',
+    name: 'RootRedirect',
+    redirect: '/dashboard',
+    meta: { title: 'NexusEdu', isHideTab: true }
+  },
+  {
+    path: '/docs/zh',
+    name: 'DocsZh',
+    component: () => import('@views/docs/zh/index.vue'),
+    meta: { title: 'NexusEdu 项目介绍', isHideTab: true }
+  },
   // 不需要登录就能访问的路由示例
   // {
   //   path: '/welcome',

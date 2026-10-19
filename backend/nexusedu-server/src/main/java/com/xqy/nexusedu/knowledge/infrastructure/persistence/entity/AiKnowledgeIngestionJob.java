@@ -1,0 +1,148 @@
+package com.xqy.nexusedu.knowledge.infrastructure.persistence.entity;
+
+import com.xqy.nexusedu.shared.infrastructure.persistence.entity.CommonEntity;
+
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
+
+@TableName("ai_knowledge_ingestion_job")
+public class AiKnowledgeIngestionJob extends CommonEntity implements Serializable {
+    @TableField("tenant_id")
+    private String tenantId;
+    @TableField("document_version_id")
+    private Long documentVersionId;
+    @TableField("index_revision")
+    private String indexRevision;
+    @TableField("job_type")
+    private String jobType;
+    private String status;
+    private Integer progress;
+    private Integer processedChunks;
+    private Boolean cancelRequested;
+    private String workerToken;
+    private LocalDateTime leaseExpireTime;
+
+    public Integer getProcessedChunks() {
+        return processedChunks;
+    }
+
+    public void setProcessedChunks(Integer processedChunks) {
+        this.processedChunks = processedChunks;
+    }
+
+    public Boolean getCancelRequested() {
+        return cancelRequested;
+    }
+
+    public void setCancelRequested(Boolean cancelRequested) {
+        this.cancelRequested = cancelRequested;
+    }
+
+    public String getWorkerToken() {
+        return workerToken;
+    }
+
+    public void setWorkerToken(String workerToken) {
+        this.workerToken = workerToken;
+    }
+
+    public LocalDateTime getLeaseExpireTime() {
+        return leaseExpireTime;
+    }
+
+    public void setLeaseExpireTime(LocalDateTime leaseExpireTime) {
+        this.leaseExpireTime = leaseExpireTime;
+    }
+
+    @TableField("retry_count")
+    private Integer retryCount;
+    @TableField("error_message")
+    private String errorMessage;
+    @TableField("start_time")
+    private LocalDateTime startTime;
+    @TableField("finish_time")
+    private LocalDateTime finishTime;
+
+    public Long getDocumentVersionId() {
+        return documentVersionId;
+    }
+
+    public String getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
+    }
+
+    public void setDocumentVersionId(Long documentVersionId) {
+        this.documentVersionId = documentVersionId;
+    }
+
+    public String getIndexRevision() {
+        return indexRevision;
+    }
+
+    public void setIndexRevision(String indexRevision) {
+        this.indexRevision = indexRevision;
+    }
+
+    public String getJobType() {
+        return jobType;
+    }
+
+    public void setJobType(String jobType) {
+        this.jobType = jobType;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Integer getProgress() {
+        return progress;
+    }
+
+    public void setProgress(Integer progress) {
+        this.progress = progress;
+    }
+
+    public Integer getRetryCount() {
+        return retryCount;
+    }
+
+    public void setRetryCount(Integer retryCount) {
+        this.retryCount = retryCount;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getFinishTime() {
+        return finishTime;
+    }
+
+    public void setFinishTime(LocalDateTime finishTime) {
+        this.finishTime = finishTime;
+    }
+}

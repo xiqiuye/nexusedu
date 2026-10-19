@@ -1,0 +1,99 @@
+package com.xqy.nexusedu.knowledge.infrastructure.persistence.entity;
+
+import com.xqy.nexusedu.shared.infrastructure.persistence.entity.CommonEntity;
+
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
+
+import java.io.Serializable;
+
+@TableName("ai_knowledge_document")
+public class AiKnowledgeDocument extends CommonEntity implements Serializable {
+    @TableField("tenant_id")
+    private String tenantId;
+    @TableField("knowledge_base_id")
+    private Long knowledgeBaseId;
+    @TableField("document_no")
+    private String documentNo;
+    @TableField("document_name")
+    private String documentName;
+    @TableField("source_type")
+    private String sourceType;
+    private String status;
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    private String version;
+    private String category;
+    private String keywords;
+
+    public Long getKnowledgeBaseId() {
+        return knowledgeBaseId;
+    }
+
+    public String getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
+    }
+
+    public void setKnowledgeBaseId(Long knowledgeBaseId) {
+        this.knowledgeBaseId = knowledgeBaseId;
+    }
+
+    public String getDocumentNo() {
+        return documentNo;
+    }
+
+    public void setDocumentNo(String documentNo) {
+        this.documentNo = documentNo;
+    }
+
+    public String getDocumentName() {
+        return documentName;
+    }
+
+    public void setDocumentName(String documentName) {
+        this.documentName = documentName;
+    }
+
+    public String getSourceType() {
+        return sourceType;
+    }
+
+    public void setSourceType(String sourceType) {
+        this.sourceType = sourceType;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getKeywords() {
+        return keywords;
+    }
+
+    public void setKeywords(String keywords) {
+        this.keywords = keywords;
+    }
+}
