@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-20
+- 重构后端包结构，统一按“业务域 → 能力 → DDD 分层”组织 AI、知识、系统、学生及共享内核代码。
+- 更新 MyBatis Mapper 扫描配置，使其遵循新的业务域包根路径。
+- 新增共享授权策略端口，并将系统 RBAC 强制逻辑移至系统域适配器中，解除 AI 和知识运行时对系统管理服务的依赖。
+- 将系统管理资源分页及基础持久化操作提取到 `SystemManagementStore`；同时将知识文档上传、解析和分块处理与知识目录管理持久化逻辑分离。
+- 通过领域 MyBatis XML Mapper 处理系统和知识管理资源分页，以及通用的插入、更新和所有者行持久化；资源与表的选择继续限制在显式资源映射范围内。
+- 将知识向量 PostgreSQL 配置统一到 `nexusedu.knowledge.postgres` 下，并移除重复的 AI 摄取 PostgreSQL 配置块；删除未使用的 `nexusedu.web.jwt` 配置块，保留 `nexusedu.system.jwt` 作为唯一 JWT 配置来源。
+
+## 2026-10-19
+- Matched the /docs/zh navigation width to the same 80% responsive container as the page content.
+
 ## 2026-10-16
 - 恢复后端 Java 包结构，统一为 DDD 分层优先、业务上下文其次。
 - 曾按业务模块合并后端目录并调整 Java 包引用与 Mapper 扫描配置。

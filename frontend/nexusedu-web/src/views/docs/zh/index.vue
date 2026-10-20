@@ -446,9 +446,15 @@
     display: none;
   }
 
-  .shell {
+  .shell,
+  .docs-nav {
+    box-sizing: border-box;
     width: min(80%, 1500px);
     margin: 0 auto;
+  }
+
+  .shell {
+    padding: 0;
   }
 
   .docs-nav {
@@ -456,9 +462,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: min(1320px, calc(100% - 64px));
     height: 78px;
-    margin: 0 auto;
     border-bottom: 1px solid var(--line);
   }
 
@@ -2360,15 +2364,6 @@
   /* stylelint-enable no-duplicate-selectors */
 
   @media (width <= 1050px) {
-    .shell {
-      padding-right: 24px;
-      padding-left: 24px;
-    }
-
-    .docs-nav {
-      width: calc(100% - 40px);
-    }
-
     .nav-links {
       gap: 17px;
       margin-right: 25px;
@@ -2407,14 +2402,8 @@
   }
 
   @media (width <= 720px) {
-    .shell {
-      padding-right: 18px;
-      padding-left: 18px;
-    }
-
     .docs-nav {
       position: relative;
-      width: calc(100% - 36px);
       height: 70px;
     }
 

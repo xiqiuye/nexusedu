@@ -1,0 +1,108 @@
+package com.xqy.nexusedu.knowledge.retrieval.application.model;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.xqy.nexusedu.shared.kernel.infrastructure.security.rpc.InternalCallContext;
+
+/**
+ * Query sent from nexusedu-ai to the knowledge provider.
+ */
+public class KnowledgeVectorQuery implements Serializable {
+    private Long knowledgeBaseId;
+    private String queryText;
+    private List<Float> embedding = new ArrayList<>();
+    private Integer topK;
+    private Double similarityThreshold;
+    private Map<String, Object> filter = new HashMap<>();
+    private String collectionName;
+    private String tenantId;
+    private InternalCallContext callerContext;
+    /**
+     * Set by the knowledge provider from live metadata, never accepted from the caller.
+     */
+    private Map<Long, String> activeVersions;
+
+    public Map<Long, String> getActiveVersions() {
+        return activeVersions;
+    }
+
+    public void setActiveVersions(Map<Long, String> activeVersions) {
+        this.activeVersions = activeVersions;
+    }
+
+    public Long getKnowledgeBaseId() {
+        return knowledgeBaseId;
+    }
+
+    public void setKnowledgeBaseId(Long knowledgeBaseId) {
+        this.knowledgeBaseId = knowledgeBaseId;
+    }
+
+    public String getQueryText() {
+        return queryText;
+    }
+
+    public void setQueryText(String queryText) {
+        this.queryText = queryText;
+    }
+
+    public List<Float> getEmbedding() {
+        return embedding;
+    }
+
+    public void setEmbedding(List<Float> embedding) {
+        this.embedding = embedding;
+    }
+
+    public Integer getTopK() {
+        return topK;
+    }
+
+    public void setTopK(Integer topK) {
+        this.topK = topK;
+    }
+
+    public Double getSimilarityThreshold() {
+        return similarityThreshold;
+    }
+
+    public void setSimilarityThreshold(Double similarityThreshold) {
+        this.similarityThreshold = similarityThreshold;
+    }
+
+    public Map<String, Object> getFilter() {
+        return filter;
+    }
+
+    public void setFilter(Map<String, Object> filter) {
+        this.filter = filter;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public void setCollectionName(String collectionName) {
+        this.collectionName = collectionName;
+    }
+
+    public String getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
+    }
+
+    public InternalCallContext getCallerContext() {
+        return callerContext;
+    }
+
+    public void setCallerContext(InternalCallContext callerContext) {
+        this.callerContext = callerContext;
+    }
+}

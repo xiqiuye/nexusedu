@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xqy.nexusedu.system.administration.infrastructure.persistence.SystemManagementMapper">
+    <sql id="table">
+        <choose>
+            <when test="resource == 'users'">sys_user</when>
+            <when test="resource == 'roles'">sys_role</when>
+            <when test="resource == 'menus'">sys_menu</when>
+            <when test="resource == 'buttons'">sys_button</when>
+            <when test="resource == 'sessions'">sys_user_session</when>
+            <otherwise>sys_user</otherwise>
+        </choose>
+    </sql>
+    <sql id="columns">
+        <choose>
+            <when test="resource == 'users'">id,tenant_id,username,nickname,real_name,email,phone,avatar,user_type,status,last_login_time,last_login_ip,create_time,update_time</when>
+            <when test="resource == 'roles'">id,role_code,role_name,description,role_type,status,create_time,update_time</when>
+            <when test="resource == 'menus'">id,parent_id,path,route_name,component,redirect,title,icon,sort_no,keep_alive,visible,hide_tab,full_page,external_link,iframe_flag,active_path,status</when>
+            <when test="resource == 'buttons'">id,menu_id,button_name,auth_remark,description,sort_no,status</when>
+            <when test="resource == 'sessions'">id,tenant_id,user_id,login_ip,user_agent,device_type,login_time,expire_time,refresh_expire_time,status,logout_time</when>
+            <otherwise>id</otherwise>
+        </choose>
+    </sql>
+    <sql id="filters">
+        <where>
+            <if test="resource == 'users' or resource == 'sessions'">tenant_id=#{tenantId}</if>
+            <if test="userId != null">AND user_id=#{userId}</if>
+            <if test="status != null and status != ''">AND status=#{status}</if>
+            <if test="resource == 'buttons' and menuId != null">AND menu_id=#{menuId}</if>
+            <if test="search != null and search != ''">
+                <choose>
+                    <when test="resource == 'users'">AND username LIKE CONCAT('%',#{search},'%')</when>
+                    <when test="resource == 'roles'">AND role_name LIKE CONCAT('%',#{search},'%')</when>
+                    <when test="resource == 'menus'">AND title LIKE CONCAT('%',#{search},'%')</when>
+                    <when test="resource == 'buttons'">AND button_name LIKE CONCAT('%',#{search},'%')</when>
+                    <otherwise>AND user_agent LIKE CONCAT('%',#{search},'%')</otherwise>
+                </choose>
+            </if>
+        </where>
+    </sql>
+    <select id="countPage" resultType="long">
+        SELECT COUNT(*) FROM <include refid="table"/> <include refid="filters"/>
+    </select>
+    <select id="selectPage" resultType="map">
+        SELECT <include refid="columns"/> FROM <include refid="table"/> <include refid="filters"/>
+        ORDER BY id DESC LIMIT #{limit} OFFSET #{offset}
+    </select>
+    <select id="selectOwned" resultType="map">
+        SELECT * FROM <include refid="table"/> WHERE id=#{id}
+        <if test="resource == 'users'">AND tenant_id=#{tenantId}</if>
+    </select>
+    <select id="selectById" resultType="map">
+        SELECT <include refid="columns"/> FROM <include refid="table"/> WHERE id=#{id}
+    </select>
+    <insert id="insertResource">
+        INSERT INTO <include refid="table"/>
+        <foreach collection="values" index="column" item="value" open="(" separator="," close=")">${column}</foreach>
+        VALUES
+        <foreach collection="values" item="value" open="(" separator="," close=")">#{value}</foreach>
+    </insert>
+    <update id="updateResource">
+        UPDATE <include refid="table"/> SET
+        <foreach collection="values" index="column" item="value" separator=",">${column}=#{value}</foreach>
+        WHERE id=#{id}
+    </update>
+</mapper>

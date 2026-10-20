@@ -8,10 +8,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableScheduling
 @MapperScan({
-        "com.xqy.nexusedu.ai.infrastructure.persistence.mapper",
-        "com.xqy.nexusedu.knowledge.infrastructure.persistence.mapper",
-        "com.xqy.nexusedu.student.infrastructure.persistence.mapper",
-        "com.xqy.nexusedu.system.infrastructure.persistence.mapper"
+        "com.xqy.nexusedu.ai",
+        "com.xqy.nexusedu.knowledge",
+        "com.xqy.nexusedu.student",
+        "com.xqy.nexusedu.system"
 })
 public class NexusEduApplication {
     public static void main(String[] args) {

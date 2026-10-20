@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xqy.nexusedu.knowledge.catalog.infrastructure.persistence.KnowledgeManagementMapper">
+    <sql id="table">
+        <choose>
+            <when test="resource == 'bases'">ai_knowledge_base</when>
+            <when test="resource == 'documents'">ai_knowledge_document</when>
+            <when test="resource == 'versions'">ai_knowledge_document_version</when>
+            <when test="resource == 'jobs'">ai_knowledge_ingestion_job</when>
+            <when test="resource == 'chunks'">ai_knowledge_document_detail</when>
+            <otherwise>ai_knowledge_base</otherwise>
+        </choose>
+    </sql>
+    <sql id="columns">
+        <choose>
+            <when test="resource == 'bases'">id,name,description,embedding_model_alias,chunk_size,chunk_overlap,split_strategy,topk,similarity_threshold,enabled,remark,create_time,update_time</when>
+            <when test="resource == 'documents'">id,knowledge_base_id,document_no,document_name,source_type,version,category,keywords,status,create_time,update_time</when>
+            <when test="resource == 'versions'">id,document_id,version,source_version,mime_type,content_hash,chunk_size,chunk_overlap,split_strategy,active_index_revision,index_status,chunk_count,error_message,create_time</when>
+            <when test="resource == 'jobs'">id,document_version_id,index_revision,job_type,status,progress,retry_count,processed_chunks,cancel_requested,start_time,finish_time,error_message,create_time</when>
+            <otherwise>id,document_id,document_version_id,chunk_no,content,content_type,metadata</otherwise>
+        </choose>
+    </sql>
+    <sql id="filters">
+        WHERE tenant_id=#{tenantId}
+        <if test="resource == 'documents'">AND status='ACTIVE'</if>
+        <if test="parentId != null">
+            <choose>
+                <when test="resource == 'documents'">AND knowledge_base_id=#{parentId}</when>
+                <when test="resource == 'versions'">AND document_id=#{parentId}</when>
+                <otherwise>AND document_version_id=#{parentId}</otherwise>
+            </choose>
+        </if>
+        <if test="search != null and search != ''">
+            <choose>
+                <when test="resource == 'bases'">AND name LIKE CONCAT('%',#{search},'%')</when>
+                <when test="resource == 'documents'">AND document_name LIKE CONCAT('%',#{search},'%')</when>
+                <when test="resource == 'versions'">AND version LIKE CONCAT('%',#{search},'%')</when>
+                <when test="resource == 'jobs'">AND status LIKE CONCAT('%',#{search},'%')</when>
+                <otherwise>AND content LIKE CONCAT('%',#{search},'%')</otherwise>
+            </choose>
+        </if>
+    </sql>
+    <select id="countPage" resultType="long">SELECT COUNT(*) FROM <include refid="table"/> <include refid="filters"/></select>
+    <select id="selectPage" resultType="map">
+        SELECT <include refid="columns"/> FROM <include refid="table"/> <include refid="filters"/>
+        ORDER BY id DESC LIMIT #{limit} OFFSET #{offset}
+    </select>
+    <select id="selectOwned" resultType="map">
+        SELECT * FROM <include refid="table"/> WHERE id=#{id} AND tenant_id=#{tenantId}
+    </select>
+    <insert id="insertResource">
+        INSERT INTO <include refid="table"/>
+        <foreach collection="values" index="column" item="value" open="(" separator="," close=")">${column}</foreach>
+        VALUES <foreach collection="values" item="value" open="(" separator="," close=")">#{value}</foreach>
+    </insert>
+    <update id="updateResource">
+        UPDATE <include refid="table"/> SET
+        <foreach collection="values" index="column" item="value" separator=",">${column}=#{value}</foreach>
+        WHERE id=#{id} AND tenant_id=#{tenantId}
+    </update>
+</mapper>
+
