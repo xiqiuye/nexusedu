@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.xqy.nexusedu.knowledge.catalog.application.port.in.KnowledgeManagementService;
+import com.xqy.nexusedu.knowledge.catalog.application.KnowledgeManagementService;
 import com.xqy.nexusedu.shared.kernel.application.dto.ApiResponse;
 import com.xqy.nexusedu.shared.kernel.application.dto.PageResult;
 import com.xqy.nexusedu.system.authentication.infrastructure.RpcCaller;

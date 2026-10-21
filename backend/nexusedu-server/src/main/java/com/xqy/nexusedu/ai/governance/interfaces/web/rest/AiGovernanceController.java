@@ -4,7 +4,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import com.xqy.nexusedu.ai.governance.application.port.in.AiGovernanceService;
+import com.xqy.nexusedu.ai.governance.application.AiGovernanceService;
 import com.xqy.nexusedu.shared.kernel.application.dto.ApiResponse;
 import com.xqy.nexusedu.shared.kernel.application.dto.PageResult;
 import com.xqy.nexusedu.ai.governance.application.model.AiGovernanceDtos;

@@ -2,7 +2,7 @@ package com.xqy.nexusedu.ai.tools.infrastructure.tool;
 
 import java.util.Locale;
 import org.springframework.stereotype.Component;
-import com.xqy.nexusedu.ai.tools.application.port.out.AiToolExecutor;
+import com.xqy.nexusedu.ai.tools.application.gateway.AiToolExecutor;
 import com.xqy.nexusedu.ai.task.domain.model.AiTask;
 import com.xqy.nexusedu.ai.task.domain.model.AiTaskResult;
 

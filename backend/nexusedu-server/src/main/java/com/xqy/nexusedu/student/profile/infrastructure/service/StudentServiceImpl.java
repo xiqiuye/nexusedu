@@ -11,6 +11,7 @@ import com.xqy.nexusedu.student.profile.application.model.StudentData;
 import com.xqy.nexusedu.student.profile.application.service.StudentService;
 import com.xqy.nexusedu.student.profile.infrastructure.persistence.entity.Student;
 import com.xqy.nexusedu.student.profile.infrastructure.persistence.mapper.StudentMapper;
+import com.xqy.nexusedu.system.authentication.infrastructure.persistence.mapper.SysAuthorizationMapper;
 
 /** Persistence-backed implementation of the student application port. */
 @Service
@@ -19,6 +20,8 @@ public class StudentServiceImpl implements StudentService {
 
     @Autowired
     private StudentMapper studentMapper;
+    @Autowired
+    private SysAuthorizationMapper authorizationMapper;
 
     @Override
     public boolean saveStudent(StudentCommand command) {
@@ -47,14 +50,20 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public List<StudentData> queryStudents(String name, String gender, String studentNo, Integer limit) {
-        int safeLimit = limit == null || limit <= 0 ? 100 : Math.min(limit, 1000);
-        LambdaQueryWrapper<Student> query = new LambdaQueryWrapper<>();
-        query.like(name != null && !name.isBlank(), Student::getName, name)
-                .eq(gender != null && !gender.isBlank(), Student::getGender, gender)
-                .eq(studentNo != null && !studentNo.isBlank(), Student::getStudentNo, studentNo)
-                .last("LIMIT " + safeLimit);
-        return studentMapper.selectList(query).stream().map(StudentServiceImpl::toData).collect(Collectors.toList());
+        return List.of();
     }
+
+    @Override
+    public List<StudentData> queryStudents(String name, String gender, String studentNo, Integer limit, String tenantId, Long userId) {
+        if(tenantId==null||tenantId.isBlank()||userId==null)return List.of();
+        int safeLimit=limit==null||limit<=0?100:Math.min(limit,100);
+        List<String> roles=authorizationMapper.findRoleCodes(userId);
+        boolean schoolWide=roles.contains("R_SUPER")||roles.contains("R_SCHOOL_ADMIN");
+        return studentMapper.selectCurrentForAi(tenantId,userId,schoolWide,blankToNull(name),blankToNull(gender),blankToNull(studentNo),safeLimit)
+                .stream().map(StudentServiceImpl::toData).collect(Collectors.toList());
+    }
+
+    private static String blankToNull(String value){return value==null||value.isBlank()?null:value.trim();}
 
     private static Student toEntity(StudentCommand command, Long id) {
         if (command == null) {

@@ -17,7 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.xqy.nexusedu.system.authentication.application.model.SystemAuthModels;
-import com.xqy.nexusedu.system.authentication.application.port.in.SystemAuthService;
+import com.xqy.nexusedu.system.authentication.application.SystemAuthService;
 import com.xqy.nexusedu.system.administration.infrastructure.persistence.entity.SysMenu;
 import com.xqy.nexusedu.system.authentication.infrastructure.persistence.entity.SysUser;
 import com.xqy.nexusedu.system.authentication.infrastructure.persistence.entity.SysUserSession;

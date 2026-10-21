@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.xqy.nexusedu.knowledge.ingestion.application.model.KnowledgeIngestionCommand;
 import com.xqy.nexusedu.knowledge.ingestion.application.model.KnowledgeIngestionResult;
 import com.xqy.nexusedu.system.authentication.application.model.AuthDtos;
-import com.xqy.nexusedu.knowledge.ingestion.application.port.in.AiKnowledgeCommandService;
+import com.xqy.nexusedu.knowledge.ingestion.application.AiKnowledgeCommandService;
 import com.xqy.nexusedu.shared.kernel.application.dto.ApiResponse;
 import com.xqy.nexusedu.shared.kernel.infrastructure.security.rpc.InternalCallSigner;
 

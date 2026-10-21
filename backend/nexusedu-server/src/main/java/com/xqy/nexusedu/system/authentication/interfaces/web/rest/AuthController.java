@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.xqy.nexusedu.system.authentication.application.model.SystemAuthModels;
 import com.xqy.nexusedu.system.authentication.application.model.AuthDtos;
-import com.xqy.nexusedu.system.administration.application.port.in.SystemManagementService;
+import com.xqy.nexusedu.system.administration.application.SystemManagementService;
 import com.xqy.nexusedu.system.authentication.application.auth.AuthService;
 import com.xqy.nexusedu.shared.kernel.application.dto.ApiResponse;
 import com.xqy.nexusedu.shared.kernel.application.dto.PageResult;

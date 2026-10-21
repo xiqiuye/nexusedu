@@ -9,7 +9,7 @@ import com.xqy.nexusedu.system.authentication.application.model.SystemAuthModels
 import com.xqy.nexusedu.system.authentication.application.model.AuthDtos.AuthenticatedUser;
 import com.xqy.nexusedu.system.authentication.application.model.AuthDtos.TokenPair;
 import com.xqy.nexusedu.system.authentication.application.model.AuthDtos.UserInfo;
-import com.xqy.nexusedu.system.authentication.application.port.in.SystemAuthService;
+import com.xqy.nexusedu.system.authentication.application.SystemAuthService;
 import com.xqy.nexusedu.system.authentication.application.exception.SystemAuthenticationException;
 import com.xqy.nexusedu.system.authentication.infrastructure.security.web.JwtTokenService;
 import com.xqy.nexusedu.system.authentication.infrastructure.security.web.JwtUserContext;

@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.xqy.nexusedu.knowledge.ingestion.application.model.KnowledgeIngestionCommand;
 import com.xqy.nexusedu.knowledge.ingestion.application.model.KnowledgeIngestionResult;
-import com.xqy.nexusedu.knowledge.ingestion.application.port.in.AiKnowledgeCommandService;
+import com.xqy.nexusedu.knowledge.ingestion.application.AiKnowledgeCommandService;
 import com.xqy.nexusedu.shared.kernel.infrastructure.security.rpc.InternalCallContext;
 import com.xqy.nexusedu.shared.kernel.infrastructure.security.rpc.InternalCallSigner;
 import com.xqy.nexusedu.knowledge.ingestion.infrastructure.service.KnowledgeIngestionQueue;

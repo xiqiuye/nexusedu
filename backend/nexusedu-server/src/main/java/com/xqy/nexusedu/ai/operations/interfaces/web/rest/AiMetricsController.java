@@ -4,7 +4,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import com.xqy.nexusedu.ai.operations.application.port.in.AiMetricsService;
+import com.xqy.nexusedu.ai.operations.application.AiMetricsService;
 import com.xqy.nexusedu.shared.kernel.application.dto.ApiResponse;
 import com.xqy.nexusedu.shared.kernel.application.dto.PageResult;
 import com.xqy.nexusedu.system.authentication.infrastructure.RpcCaller;

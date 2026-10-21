@@ -5,7 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import com.xqy.nexusedu.shared.kernel.application.exception.ManagementAccessDeniedException;
-import com.xqy.nexusedu.shared.kernel.application.port.out.AuthorizationPolicy;
+import com.xqy.nexusedu.shared.kernel.application.gateway.AuthorizationPolicy;
 import com.xqy.nexusedu.shared.kernel.infrastructure.security.rpc.InternalCallContext;
 import com.xqy.nexusedu.shared.kernel.infrastructure.security.rpc.InternalCallSigner;
 import com.xqy.nexusedu.system.authentication.infrastructure.persistence.mapper.SysAuthorizationMapper;

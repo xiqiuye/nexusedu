@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.xqy.nexusedu.student.profile.application.service.StudentService;
 import com.xqy.nexusedu.student.profile.application.model.StudentData;
 import com.xqy.nexusedu.ai.task.domain.model.AiTask;
+import com.xqy.nexusedu.ai.task.domain.model.AiExecutionContext;
 import com.xqy.nexusedu.ai.task.domain.model.AiTaskResult;
 import com.xqy.nexusedu.ai.task.domain.model.QueryCriteria;
 import com.xqy.nexusedu.ai.task.domain.model.QueryFilterNode;
@@ -21,7 +22,8 @@ public class StudentBusinessService {
     private StudentService studentService;
 
     public AiTaskResult queryStudent(AiTask task) {
-        AiTaskResult result = queryStudent(task == null ? null : task.getQuery());
+        AiExecutionContext context=task==null?null:task.getExecutionContext();
+        AiTaskResult result = queryStudent(task == null ? null : task.getQuery(),context==null?null:context.getTenantId(),context==null?null:context.getUserId());
         if (task != null) {
             result.setDomain(task.getDomain());
             result.setToolName(task.getToolName());
@@ -32,9 +34,14 @@ public class StudentBusinessService {
 
     /** Queries the student provider using the planner's normalized criteria. */
     public AiTaskResult queryStudent(QueryCriteria criteria) {
+        return queryStudent(criteria,null,null);
+    }
+
+    private AiTaskResult queryStudent(QueryCriteria criteria,String tenantId,Long userId) {
         StudentQueryValues values = extractValues(criteria == null ? null : criteria.getFilter());
         int limit = criteria == null ? 100 : criteria.getLimit();
-        List<StudentData> students = studentService.queryStudents(values.name(), values.gender(), values.studentNo(), limit);
+        List<StudentData> students = studentService.queryStudents(values.name(), values.gender(), values.studentNo(), limit,tenantId,userId);
+        students.forEach(student->{student.setBirthday(null);student.setEmail(null);student.setPhone(null);student.setAge(null);});
         Map<String, Object> summary = new HashMap<>();
         summary.put("count", students.size());
         summary.put("domain", "student");

@@ -20,7 +20,7 @@ import com.xqy.nexusedu.knowledge.ingestion.infrastructure.parser.DocumentChunke
 import com.xqy.nexusedu.knowledge.ingestion.infrastructure.parser.DocumentTextParser;
 import com.xqy.nexusedu.shared.kernel.application.dto.ManagementRows;
 import com.xqy.nexusedu.shared.kernel.application.exception.ManagementNotFoundException;
-import com.xqy.nexusedu.shared.kernel.application.port.out.AuthorizationPolicy;
+import com.xqy.nexusedu.shared.kernel.application.gateway.AuthorizationPolicy;
 import com.xqy.nexusedu.shared.kernel.infrastructure.security.rpc.InternalCallContext;
 
 @Service

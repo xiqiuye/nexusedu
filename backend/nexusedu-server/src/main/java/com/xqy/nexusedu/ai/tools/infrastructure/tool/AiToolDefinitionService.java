@@ -3,7 +3,7 @@ package com.xqy.nexusedu.ai.tools.infrastructure.tool;
 import java.util.Collections;
 import java.util.List;
 import org.springframework.stereotype.Service;
-import com.xqy.nexusedu.ai.tools.application.port.out.AiToolDefinitionProvider;
+import com.xqy.nexusedu.ai.tools.application.gateway.AiToolDefinitionProvider;
 import com.xqy.nexusedu.ai.tools.infrastructure.persistence.entity.AiToolDefinition;
 import com.xqy.nexusedu.ai.tools.infrastructure.persistence.mapper.AiToolDefinitionMapper;
 

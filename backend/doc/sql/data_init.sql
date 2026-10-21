@@ -380,3 +380,41 @@ VALUES
     (1000000000000000901,'default','openai','gpt-5.6-terra','USD',NULL,NULL,NULL,0,'2026-10-12 00:00:00',@bootstrap_actor,@bootstrap_actor),
     (1000000000000000902,'default','openai','gpt-6.1-sol','USD',NULL,NULL,NULL,0,'2026-10-12 00:00:00',@bootstrap_actor,@bootstrap_actor)
 ON DUPLICATE KEY UPDATE id=VALUES(id);
+
+
+-- Student roster seed data and legacy enrollment bootstrap
+-- Existing rows remain in their tenant. A default campus and current academic year provide
+-- a migration anchor; legacy records are visible as unassigned until reviewed by the school.
+INSERT INTO school_campus (tenant_id,campus_code,name)
+SELECT DISTINCT tenant_id,'MAIN','默认校区' FROM student
+ON DUPLICATE KEY UPDATE name=VALUES(name);
+INSERT INTO school_academic_year (tenant_id,name,starts_on,ends_on,is_current)
+SELECT DISTINCT tenant_id,'2026-2027','2026-09-01','2027-08-31',1 FROM student
+ON DUPLICATE KEY UPDATE is_current=VALUES(is_current);
+INSERT INTO student_enrollment(tenant_id,student_id,academic_year_id,campus_id,grade,class_id,status,starts_on,change_reason)
+SELECT s.tenant_id,s.id,y.id,c.id,NULL,NULL,'NEEDS_REVIEW',CURRENT_DATE,'历史学生数据待学校核定年级和班级'
+FROM student s JOIN school_campus c ON c.tenant_id=s.tenant_id AND c.campus_code='MAIN'
+JOIN school_academic_year y ON y.tenant_id=s.tenant_id AND y.is_current=1
+WHERE NOT EXISTS(SELECT 1 FROM student_enrollment e WHERE e.tenant_id=s.tenant_id AND e.student_id=s.id AND e.academic_year_id=y.id);
+
+INSERT INTO sys_role(id,role_code,role_name,description,role_type,status,create_by,modify_by) VALUES
+(1700,'R_SCHOOL_ADMIN','校级管理员','管理本校所有校区、学生和班级','BUSINESS','ENABLED','migration','migration'),
+(1701,'R_CAMPUS_ADMIN','校区管理员','管理授权校区的学生和班级','BUSINESS','ENABLED','migration','migration'),
+(1702,'R_HOMEROOM','班主任','查看并维护任教班级学生','BUSINESS','ENABLED','migration','migration'),
+(1703,'R_TEACHER','普通教师','查看任教班级学生','BUSINESS','ENABLED','migration','migration')
+ON DUPLICATE KEY UPDATE role_name=VALUES(role_name),description=VALUES(description),status='ENABLED';
+
+INSERT INTO sys_menu(id,parent_id,path,route_name,component,title,icon,sort_no,keep_alive,visible,hide_tab,full_page,iframe_flag,status,create_by,modify_by) VALUES
+(1700,NULL,'/student','StudentManagement','/index/index','学生管理','ri:graduation-cap-line',80,0,1,0,0,0,'ENABLED','migration','migration'),
+(1701,1700,'roster','StudentRoster','/student','学生档案','ri:contacts-line',10,0,1,0,0,0,'ENABLED','migration','migration')
+ON DUPLICATE KEY UPDATE title=VALUES(title),component=VALUES(component),status='ENABLED';
+INSERT INTO sys_role_menu(id,role_id,menu_id,create_by,modify_by)
+SELECT 170000+role_id*10+menu_id,role_id,menu_id,'migration','migration' FROM sys_role CROSS JOIN (SELECT 1700 AS menu_id UNION ALL SELECT 1701) m WHERE role_code IN ('R_SUPER','R_SCHOOL_ADMIN','R_CAMPUS_ADMIN','R_HOMEROOM','R_TEACHER')
+ON DUPLICATE KEY UPDATE menu_id=VALUES(menu_id);
+INSERT INTO sys_button(id,menu_id,button_name,auth_remark,description,sort_no,status,create_by,modify_by) VALUES
+(1701,1701,'查看学生','student:read','查看授权范围内学生',10,'ENABLED','migration','migration'),
+(1702,1701,'维护学生','student:write','维护授权范围内学生',20,'ENABLED','migration','migration')
+ON DUPLICATE KEY UPDATE auth_remark=VALUES(auth_remark),status='ENABLED';
+INSERT INTO sys_role_button(id,role_id,button_id,create_by,modify_by)
+SELECT 180000+role_id*10+button_id,role_id,button_id,'migration','migration' FROM sys_role CROSS JOIN (SELECT 1701 AS button_id UNION ALL SELECT 1702) b WHERE role_code IN ('R_SUPER','R_SCHOOL_ADMIN','R_CAMPUS_ADMIN','R_HOMEROOM','R_TEACHER')
+ON DUPLICATE KEY UPDATE button_id=VALUES(button_id);

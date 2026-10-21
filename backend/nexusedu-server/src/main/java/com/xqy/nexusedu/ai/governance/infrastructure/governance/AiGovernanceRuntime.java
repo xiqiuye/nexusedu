@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import com.xqy.nexusedu.ai.task.domain.model.AiExecutionContext;
-import com.xqy.nexusedu.shared.kernel.application.port.out.AuthorizationPolicy;
+import com.xqy.nexusedu.shared.kernel.application.gateway.AuthorizationPolicy;
 import com.xqy.nexusedu.ai.model.infrastructure.persistence.entity.AiModelDefinition;
 import com.xqy.nexusedu.ai.tools.infrastructure.persistence.entity.AiToolDefinition;
 import com.xqy.nexusedu.shared.kernel.application.exception.ManagementAccessDeniedException;

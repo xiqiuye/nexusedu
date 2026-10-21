@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.xqy.nexusedu.knowledge.retrieval.application.model.KnowledgeVectorQuery;
-import com.xqy.nexusedu.knowledge.retrieval.application.port.out.KnowledgeService;
+import com.xqy.nexusedu.knowledge.retrieval.application.gateway.KnowledgeService;
 import com.xqy.nexusedu.knowledge.retrieval.infrastructure.persistence.entity.AiknowledgeChunk;
 import com.xqy.nexusedu.shared.kernel.infrastructure.security.rpc.InternalCallSigner;
 import com.xqy.nexusedu.ai.task.domain.model.AiTask;

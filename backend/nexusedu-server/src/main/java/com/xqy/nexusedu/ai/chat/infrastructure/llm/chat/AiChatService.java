@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import com.xqy.nexusedu.ai.task.domain.model.AiExecutionContext;
-import com.xqy.nexusedu.ai.chat.application.port.out.AiStreamEventPublisher;
+import com.xqy.nexusedu.ai.chat.application.gateway.AiStreamEventPublisher;
 import com.xqy.nexusedu.ai.task.application.service.execution.TaskExecutionService;
 import com.xqy.nexusedu.ai.task.domain.constant.AiConstants;
 import com.xqy.nexusedu.ai.chat.infrastructure.llm.assistant.AiChatAssistant;

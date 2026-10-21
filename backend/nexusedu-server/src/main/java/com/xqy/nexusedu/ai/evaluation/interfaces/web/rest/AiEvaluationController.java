@@ -5,7 +5,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import com.xqy.nexusedu.ai.evaluation.application.port.in.AiEvaluationService;
+import com.xqy.nexusedu.ai.evaluation.application.AiEvaluationService;
 import com.xqy.nexusedu.shared.kernel.application.dto.ApiResponse;
 import com.xqy.nexusedu.shared.kernel.application.dto.PageResult;
 import com.xqy.nexusedu.ai.evaluation.application.model.AiEvaluationDtos;

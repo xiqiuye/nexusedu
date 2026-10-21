@@ -24,4 +24,6 @@ public interface StudentService {
      * Query students by the fields supported by the AI student tool.
      */
     List<StudentData> queryStudents(String name, String gender, String studentNo, Integer limit);
+
+    List<StudentData> queryStudents(String name, String gender, String studentNo, Integer limit, String tenantId, Long userId);
 }

@@ -11,7 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import com.xqy.nexusedu.shared.kernel.application.port.out.AuthorizationPolicy;
+import com.xqy.nexusedu.shared.kernel.application.gateway.AuthorizationPolicy;
 import com.xqy.nexusedu.ai.operations.infrastructure.observability.observation.AiObservationService.Scope;
 import com.xqy.nexusedu.shared.kernel.application.exception.ManagementAccessDeniedException;
 import com.xqy.nexusedu.shared.kernel.application.exception.ManagementConflictException;

@@ -14,7 +14,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.xqy.nexusedu.knowledge.retrieval.application.model.KnowledgeVectorQuery;
-import com.xqy.nexusedu.knowledge.retrieval.application.port.out.KnowledgeService;
+import com.xqy.nexusedu.knowledge.retrieval.application.gateway.KnowledgeService;
 import com.xqy.nexusedu.knowledge.catalog.infrastructure.persistence.entity.AiKnowledgeBase;
 import com.xqy.nexusedu.knowledge.catalog.infrastructure.persistence.entity.AiKnowledgeDocument;
 import com.xqy.nexusedu.knowledge.catalog.infrastructure.persistence.entity.AiKnowledgeDocumentVersion;

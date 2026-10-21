@@ -14,7 +14,7 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import com.xqy.nexusedu.ai.task.domain.model.AiExecutionContext;
-import com.xqy.nexusedu.ai.chat.application.port.out.AiStreamEventPublisher;
+import com.xqy.nexusedu.ai.chat.application.gateway.AiStreamEventPublisher;
 import com.xqy.nexusedu.ai.task.application.service.execution.TaskExecutionService;
 import com.xqy.nexusedu.ai.task.application.service.plan.TaskPlannerService;
 import com.xqy.nexusedu.ai.task.application.service.run.AiTaskRunService;

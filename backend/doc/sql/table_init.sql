@@ -5,21 +5,85 @@ SET NAMES utf8mb4;
 -- student 表 DDL
 CREATE TABLE IF NOT EXISTS student (
     id BIGINT NOT NULL AUTO_INCREMENT,
-    student_no VARCHAR(64) NOT NULL COMMENT '学号',
-    name VARCHAR(128) NOT NULL COMMENT '姓名',
-    age INT DEFAULT NULL COMMENT '年龄',
-    gender VARCHAR(16) DEFAULT NULL COMMENT '性别',
-    birthday DATE DEFAULT NULL COMMENT '出生日期',
-    email VARCHAR(128) DEFAULT NULL COMMENT '邮箱',
-    phone VARCHAR(32) DEFAULT NULL COMMENT '联系电话',
-    enrolled_at DATETIME DEFAULT NULL COMMENT '入学时间',
-    create_by VARCHAR(64) DEFAULT NULL COMMENT '记录创建者',
-    modify_by VARCHAR(64) DEFAULT NULL COMMENT '记录修改者',
-    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '记录创建时间',
-    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '记录更新时间',
+    tenant_id VARCHAR(64) NOT NULL DEFAULT 'default',
+    student_no VARCHAR(64) NOT NULL,
+    name VARCHAR(128) NOT NULL,
+    age INT DEFAULT NULL,
+    gender VARCHAR(16) DEFAULT NULL,
+    birthday DATE DEFAULT NULL,
+    email VARCHAR(128) DEFAULT NULL,
+    phone VARCHAR(32) DEFAULT NULL,
+    enrolled_at DATETIME DEFAULT NULL,
+    create_by VARCHAR(64) DEFAULT NULL,
+    modify_by VARCHAR(64) DEFAULT NULL,
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
-    UNIQUE KEY uq_student_no (student_no)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='学生表';
+    UNIQUE KEY uk_student_tenant_no (tenant_id, student_no)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Student';
+
+
+-- Elementary school organization and enrollment schema.
+CREATE TABLE IF NOT EXISTS school_campus (
+ id BIGINT NOT NULL AUTO_INCREMENT, tenant_id VARCHAR(64) NOT NULL, campus_code VARCHAR(32) NOT NULL,
+ name VARCHAR(128) NOT NULL, address VARCHAR(255) DEFAULT NULL, status VARCHAR(16) NOT NULL DEFAULT 'ACTIVE',
+ create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ PRIMARY KEY(id), UNIQUE KEY uk_campus_tenant_code(tenant_id,campus_code), KEY idx_campus_tenant_status(tenant_id,status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS school_academic_year (
+ id BIGINT NOT NULL AUTO_INCREMENT, tenant_id VARCHAR(64) NOT NULL, name VARCHAR(32) NOT NULL,
+ starts_on DATE NOT NULL, ends_on DATE NOT NULL, is_current TINYINT(1) NOT NULL DEFAULT 0,
+ PRIMARY KEY(id), UNIQUE KEY uk_year_tenant_name(tenant_id,name), KEY idx_year_current(tenant_id,is_current)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS school_class (
+ id BIGINT NOT NULL AUTO_INCREMENT, tenant_id VARCHAR(64) NOT NULL, campus_id BIGINT NOT NULL,
+ academic_year_id BIGINT NOT NULL, grade TINYINT NOT NULL, class_name VARCHAR(64) NOT NULL,
+ capacity INT DEFAULT NULL, status VARCHAR(16) NOT NULL DEFAULT 'ACTIVE',
+ PRIMARY KEY(id), UNIQUE KEY uk_class_year_name(tenant_id,campus_id,academic_year_id,grade,class_name),
+ KEY idx_class_scope(tenant_id,campus_id,academic_year_id,grade),
+ CONSTRAINT fk_class_campus FOREIGN KEY(campus_id) REFERENCES school_campus(id),
+ CONSTRAINT fk_class_year FOREIGN KEY(academic_year_id) REFERENCES school_academic_year(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS student_campus_admin (
+ tenant_id VARCHAR(64) NOT NULL, campus_id BIGINT NOT NULL, user_id BIGINT NOT NULL,
+ PRIMARY KEY(tenant_id,campus_id,user_id), KEY idx_campus_admin_user(tenant_id,user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS student_homeroom_assignment (
+ id BIGINT NOT NULL AUTO_INCREMENT, tenant_id VARCHAR(64) NOT NULL, class_id BIGINT NOT NULL, user_id BIGINT NOT NULL,
+ starts_on DATE NOT NULL, ends_on DATE DEFAULT NULL, PRIMARY KEY(id),
+ KEY idx_homeroom_user_active(tenant_id,user_id,ends_on), KEY idx_homeroom_class_active(tenant_id,class_id,ends_on),
+ CONSTRAINT fk_homeroom_class FOREIGN KEY(class_id) REFERENCES school_class(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS student_school_class_scope (
+ tenant_id VARCHAR(64) NOT NULL, class_id BIGINT NOT NULL, user_id BIGINT NOT NULL, PRIMARY KEY(tenant_id,class_id,user_id),
+ KEY idx_class_scope_user(tenant_id,user_id), CONSTRAINT fk_scope_class FOREIGN KEY(class_id) REFERENCES school_class(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS student_enrollment (
+ id BIGINT NOT NULL AUTO_INCREMENT, tenant_id VARCHAR(64) NOT NULL, student_id BIGINT NOT NULL,
+ academic_year_id BIGINT NOT NULL, campus_id BIGINT NOT NULL, grade TINYINT DEFAULT NULL, class_id BIGINT DEFAULT NULL,
+ status VARCHAR(20) NOT NULL DEFAULT 'ENROLLED', starts_on DATE NOT NULL, ends_on DATE DEFAULT NULL,
+ change_reason VARCHAR(255) DEFAULT NULL, changed_by BIGINT DEFAULT NULL, PRIMARY KEY(id),
+ KEY idx_enrollment_student_year(tenant_id,student_id,academic_year_id,starts_on),
+ KEY idx_enrollment_scope(tenant_id,academic_year_id,campus_id,grade,class_id,status),
+ CONSTRAINT fk_enrollment_student FOREIGN KEY(student_id) REFERENCES student(id),
+ CONSTRAINT fk_enrollment_campus FOREIGN KEY(campus_id) REFERENCES school_campus(id),
+ CONSTRAINT fk_enrollment_year FOREIGN KEY(academic_year_id) REFERENCES school_academic_year(id),
+ CONSTRAINT fk_enrollment_class FOREIGN KEY(class_id) REFERENCES school_class(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS student_guardian_contact (
+ id BIGINT NOT NULL AUTO_INCREMENT, tenant_id VARCHAR(64) NOT NULL, student_id BIGINT NOT NULL,
+ name VARCHAR(128) NOT NULL, relationship VARCHAR(32) NOT NULL, phone VARCHAR(32) NOT NULL,
+ is_primary TINYINT(1) NOT NULL DEFAULT 0, PRIMARY KEY(id), KEY idx_guardian_student(tenant_id,student_id),
+ CONSTRAINT fk_guardian_student FOREIGN KEY(student_id) REFERENCES student(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Idempotent upgrade for installations whose student table predates tenant scoping.
+SET @ddl = (SELECT IF(COUNT(*)=0, 'ALTER TABLE student ADD COLUMN tenant_id VARCHAR(64) NOT NULL DEFAULT ''default'' AFTER id', 'SELECT 1') FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='student' AND column_name='tenant_id');
+PREPARE student_upgrade FROM @ddl; EXECUTE student_upgrade; DEALLOCATE PREPARE student_upgrade;
+SET @ddl = (SELECT IF(COUNT(*)>0, 'ALTER TABLE student DROP INDEX uq_student_no', 'SELECT 1') FROM information_schema.statistics WHERE table_schema=DATABASE() AND table_name='student' AND index_name='uq_student_no');
+PREPARE student_upgrade FROM @ddl; EXECUTE student_upgrade; DEALLOCATE PREPARE student_upgrade;
+SET @ddl = (SELECT IF(COUNT(*)=0, 'ALTER TABLE student ADD UNIQUE KEY uk_student_tenant_no (tenant_id,student_no)', 'SELECT 1') FROM information_schema.statistics WHERE table_schema=DATABASE() AND table_name='student' AND index_name='uk_student_tenant_no');
+PREPARE student_upgrade FROM @ddl; EXECUTE student_upgrade; DEALLOCATE PREPARE student_upgrade;
 
 -- AI 工具定义表
 CREATE TABLE IF NOT EXISTS ai_tool_definition (
