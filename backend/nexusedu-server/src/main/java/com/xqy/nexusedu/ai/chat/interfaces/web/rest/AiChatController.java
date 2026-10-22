@@ -25,11 +25,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import com.xqy.nexusedu.ai.chat.application.model.AiChatCommand;
-import com.xqy.nexusedu.ai.chat.application.model.AiChatDtos;
+import com.xqy.nexusedu.ai.chat.application.model.AiChatRequest;
 import com.xqy.nexusedu.system.authentication.application.model.AuthDtos;
 import com.xqy.nexusedu.ai.task.domain.model.AiExecutionContext;
 import com.xqy.nexusedu.ai.task.application.model.AiRunView;
-import com.xqy.nexusedu.ai.chat.application.AiChatCommandService;
+import com.xqy.nexusedu.ai.chat.application.service.chat.AiChatCommandService;
 import com.xqy.nexusedu.ai.operations.application.AiOperationsService;
 import com.xqy.nexusedu.shared.kernel.application.dto.ApiResponse;
 import com.xqy.nexusedu.shared.kernel.infrastructure.security.rpc.InternalCallContext;
@@ -55,18 +55,18 @@ public class AiChatController {
     }
 
     @PostMapping(value = "/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE + ";charset=UTF-8")
-    public SseEmitter chat(@RequestBody AiChatDtos.ChatRequest request, Authentication authentication) {
+    public SseEmitter chat(@RequestBody AiChatRequest request, Authentication authentication) {
         AuthDtos.AuthenticatedUser user = user(authentication);
         Map<String, Object> receipt = submit(request, user);
         return events(String.valueOf(receipt.get("runId")), "0-0", authentication);
     }
 
     @PostMapping("/chat/runs")
-    public ApiResponse<Map<String, Object>> start(@RequestBody AiChatDtos.ChatRequest request, Authentication authentication) {
+    public ApiResponse<Map<String, Object>> start(@RequestBody AiChatRequest request, Authentication authentication) {
         return ApiResponse.success(submit(request, user(authentication)));
     }
 
-    private Map<String, Object> submit(AiChatDtos.ChatRequest request, AuthDtos.AuthenticatedUser user) {
+    private Map<String, Object> submit(AiChatRequest request, AuthDtos.AuthenticatedUser user) {
         if (request == null || request.question() == null || request.question().isBlank())
             throw new IllegalArgumentException("question must not be blank");
         if (request.question().length() > 4_000) throw new IllegalArgumentException("question exceeds 4000 characters");

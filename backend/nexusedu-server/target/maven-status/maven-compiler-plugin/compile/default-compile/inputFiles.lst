@@ -1,8 +1,7 @@
-D:\Code\NexusEdu\backend\nexusedu-server\src\main\java\com\xqy\nexusedu\ai\chat\application\AiChatCommandService.java
 D:\Code\NexusEdu\backend\nexusedu-server\src\main\java\com\xqy\nexusedu\ai\chat\application\gateway\AiStreamEventPublisher.java
 D:\Code\NexusEdu\backend\nexusedu-server\src\main\java\com\xqy\nexusedu\ai\chat\application\model\AiChatCommand.java
-D:\Code\NexusEdu\backend\nexusedu-server\src\main\java\com\xqy\nexusedu\ai\chat\application\model\AiChatDtos.java
-D:\Code\NexusEdu\backend\nexusedu-server\src\main\java\com\xqy\nexusedu\ai\chat\application\service\chat\AiChatCommandServiceImpl.java
+D:\Code\NexusEdu\backend\nexusedu-server\src\main\java\com\xqy\nexusedu\ai\chat\application\model\AiChatRequest.java
+D:\Code\NexusEdu\backend\nexusedu-server\src\main\java\com\xqy\nexusedu\ai\chat\application\service\chat\AiChatCommandService.java
 D:\Code\NexusEdu\backend\nexusedu-server\src\main\java\com\xqy\nexusedu\ai\chat\application\service\chat\AiChatHistoryService.java
 D:\Code\NexusEdu\backend\nexusedu-server\src\main\java\com\xqy\nexusedu\ai\chat\application\service\chat\AiConversationLifecycle.java
 D:\Code\NexusEdu\backend\nexusedu-server\src\main\java\com\xqy\nexusedu\ai\chat\application\service\chat\ConversationApplicationService.java
@@ -83,6 +82,7 @@ D:\Code\NexusEdu\backend\nexusedu-server\src\main\java\com\xqy\nexusedu\ai\tools
 D:\Code\NexusEdu\backend\nexusedu-server\src\main\java\com\xqy\nexusedu\ai\tools\application\gateway\AiToolExecutor.java
 D:\Code\NexusEdu\backend\nexusedu-server\src\main\java\com\xqy\nexusedu\ai\tools\infrastructure\persistence\AiSourceStore.java
 D:\Code\NexusEdu\backend\nexusedu-server\src\main\java\com\xqy\nexusedu\ai\tools\infrastructure\persistence\entity\AiToolDefinition.java
+D:\Code\NexusEdu\backend\nexusedu-server\src\main\java\com\xqy\nexusedu\ai\tools\infrastructure\persistence\mapper\AiRunSourceMapper.java
 D:\Code\NexusEdu\backend\nexusedu-server\src\main\java\com\xqy\nexusedu\ai\tools\infrastructure\persistence\mapper\AiToolDefinitionMapper.java
 D:\Code\NexusEdu\backend\nexusedu-server\src\main\java\com\xqy\nexusedu\ai\tools\infrastructure\tool\AiToolDefinitionService.java
 D:\Code\NexusEdu\backend\nexusedu-server\src\main\java\com\xqy\nexusedu\ai\tools\infrastructure\tool\knowledge\KnowledgeToolExecutor.java

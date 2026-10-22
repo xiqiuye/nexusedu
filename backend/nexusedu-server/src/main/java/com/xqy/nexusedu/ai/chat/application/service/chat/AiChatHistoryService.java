@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.xqy.nexusedu.ai.chat.infrastructure.persistence.entity.AiChatConversation;
@@ -20,20 +19,23 @@ import com.xqy.nexusedu.ai.task.infrastructure.persistence.entity.AiTaskRun;
 import com.xqy.nexusedu.shared.kernel.application.exception.ManagementNotFoundException;
 import com.xqy.nexusedu.ai.chat.infrastructure.persistence.mapper.AiChatConversationMapper;
 import com.xqy.nexusedu.ai.chat.infrastructure.persistence.mapper.AiChatMessageMapper;
+import com.xqy.nexusedu.ai.task.infrastructure.persistence.mapper.AiTaskRunMapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 
 /**
  * Persists the user and assistant turns of an AI chat.
  */
 @Service
 public class AiChatHistoryService {
-    @Autowired
-    private JdbcTemplate jdbc;
     private final AiChatConversationMapper conversationMapper;
     private final AiChatMessageMapper messageMapper;
+    private final AiTaskRunMapper runMapper;
 
-    public AiChatHistoryService(AiChatConversationMapper conversationMapper, AiChatMessageMapper messageMapper) {
+    public AiChatHistoryService(AiChatConversationMapper conversationMapper, AiChatMessageMapper messageMapper,
+                                AiTaskRunMapper runMapper) {
         this.conversationMapper = conversationMapper;
         this.messageMapper = messageMapper;
+        this.runMapper = runMapper;
     }
 
     @Transactional
@@ -53,9 +55,11 @@ public class AiChatHistoryService {
     private Long persist(AiTaskRun run, String role, String content) {
         AiChatConversation conversation = findOrCreate(run);
         run.setConversationId(conversation.getId());
-        if (jdbc != null)
-            jdbc.update("UPDATE ai_task_run SET conversation_id=? WHERE run_id=? AND tenant_id=? AND conversation_id IS NULL",
-                    conversation.getId(), run.getRunId(), run.getTenantId());
+        runMapper.update(null, new LambdaUpdateWrapper<AiTaskRun>()
+                .set(AiTaskRun::getConversationId, conversation.getId())
+                .eq(AiTaskRun::getRunId, run.getRunId())
+                .eq(AiTaskRun::getTenantId, run.getTenantId())
+                .isNull(AiTaskRun::getConversationId));
         if (messageMapper.exists(new LambdaQueryWrapper<AiChatMessage>()
                 .eq(AiChatMessage::getConversationId, conversation.getId())
                 .eq(AiChatMessage::getRunId, run.getRunId())

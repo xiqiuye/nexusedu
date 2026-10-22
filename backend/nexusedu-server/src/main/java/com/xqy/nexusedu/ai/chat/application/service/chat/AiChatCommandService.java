@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import com.xqy.nexusedu.ai.chat.application.model.AiChatCommand;
 import com.xqy.nexusedu.ai.task.domain.model.AiExecutionContext;
 import com.xqy.nexusedu.ai.task.application.model.AiRunView;
-import com.xqy.nexusedu.ai.chat.application.AiChatCommandService;
 import com.xqy.nexusedu.ai.operations.application.AiOperationsService;
 import com.xqy.nexusedu.ai.task.application.service.run.AiTaskRunService;
 import com.xqy.nexusedu.ai.task.infrastructure.persistence.entity.AiTaskRun;
@@ -19,26 +18,24 @@ import com.xqy.nexusedu.shared.kernel.infrastructure.security.rpc.InternalCallCo
 import com.xqy.nexusedu.shared.kernel.infrastructure.security.rpc.InternalCallSigner;
 
 @Service
-public class AiChatCommandServiceImpl implements AiChatCommandService {
-    private static final Logger log = LoggerFactory.getLogger(AiChatCommandServiceImpl.class);
+public class AiChatCommandService {
+    private static final Logger log = LoggerFactory.getLogger(AiChatCommandService.class);
     private final ConversationApplicationService conversation;
     private final AiTaskRunService runs;
     private final InternalCallSigner internalCallSigner;
     private final AiOperationsService operations;
 
-    public AiChatCommandServiceImpl(ConversationApplicationService conversation, AiTaskRunService runs, @Value("${nexusedu.internal-rpc.secret}") String internalRpcSecret, AiOperationsService operations) {
+    public AiChatCommandService(ConversationApplicationService conversation, AiTaskRunService runs, @Value("${nexusedu.internal-rpc.secret}") String internalRpcSecret, AiOperationsService operations) {
         this.conversation = conversation;
         this.runs = runs;
         this.internalCallSigner = new InternalCallSigner(internalRpcSecret);
         this.operations = operations;
     }
 
-    @Override
     public void submit(AiChatCommand command) {
         submitRun(command);
     }
 
-    @Override
     public Map<String, Object> submitRun(AiChatCommand command) {
         if (command == null) throw new IllegalArgumentException("chat command must not be null");
         InternalCallContext context = authenticate(command.callerContext());
@@ -57,7 +54,6 @@ public class AiChatCommandServiceImpl implements AiChatCommandService {
         return receipt;
     }
 
-    @Override
     public void cancel(String runId, InternalCallContext callerContext) {
         InternalCallContext context = authenticate(callerContext);
         log.info("rpc_audit action=chat_cancel caller={} tenant={} user={} requestId={}", context.callerService(), context.tenantId(), context.userId(), context.requestId());
@@ -70,7 +66,6 @@ public class AiChatCommandServiceImpl implements AiChatCommandService {
         conversation.cancel(execution);
     }
 
-    @Override
     public AiRunView getRun(String runId, InternalCallContext callerContext) {
         InternalCallContext context = authenticate(callerContext);
         AiTaskRun run = runs.requireOwnedRun(runId, context.tenantId(), String.valueOf(context.userId()));
