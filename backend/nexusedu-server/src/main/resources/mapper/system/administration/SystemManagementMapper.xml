@@ -63,4 +63,91 @@
         <foreach collection="values" index="column" item="value" separator=",">${column}=#{value}</foreach>
         WHERE id=#{id}
     </update>
+
+    <select id="countByTable" resultType="int">
+        SELECT COUNT(*)
+        FROM
+        <choose>
+            <when test="table == 'sys_user'">sys_user</when>
+            <when test="table == 'sys_role'">sys_role</when>
+            <when test="table == 'sys_menu'">sys_menu</when>
+            <when test="table == 'sys_button'">sys_button</when>
+            <otherwise>sys_user_session</otherwise>
+        </choose>
+        WHERE id = #{id}
+    </select>
+
+    <delete id="deleteUserRoles">DELETE FROM sys_user_role WHERE user_id = #{userId}</delete>
+    <select id="countRoleUsers" resultType="int">SELECT COUNT(*) FROM sys_user_role WHERE role_id = #{roleId}</select>
+    <delete id="deleteRoleButtons">DELETE FROM sys_role_button WHERE role_id = #{roleId}</delete>
+    <delete id="deleteRoleMenus">DELETE FROM sys_role_menu WHERE role_id = #{roleId}</delete>
+    <select id="countChildMenus" resultType="int">SELECT COUNT(*) FROM sys_menu WHERE parent_id = #{menuId}</select>
+    <select id="countMenuButtons" resultType="int">SELECT COUNT(*) FROM sys_button WHERE menu_id = #{menuId}</select>
+    <delete id="deleteMenuRoles">DELETE FROM sys_role_menu WHERE menu_id = #{menuId}</delete>
+    <delete id="deleteButtonRoles">DELETE FROM sys_role_button WHERE button_id = #{buttonId}</delete>
+
+    <delete id="deleteResource">
+        DELETE FROM
+        <include refid="table"/>
+        WHERE id = #{id}
+    </delete>
+
+    <select id="findRoleCode" resultType="string">
+        SELECT role_code FROM sys_role WHERE id = #{roleId}
+    </select>
+    <select id="lockSuperRole" resultType="long">
+        SELECT id FROM sys_role WHERE role_code = 'R_SUPER' FOR UPDATE
+    </select>
+    <select id="countUserRole" resultType="int">
+        SELECT COUNT(*) FROM sys_user_role WHERE user_id = #{userId} AND role_id = #{roleId}
+    </select>
+    <select id="countEnabledSuperUsers" resultType="int">
+        SELECT COUNT(*)
+        FROM sys_user_role ur
+        JOIN sys_user u ON u.id = ur.user_id
+        WHERE ur.role_id = #{roleId} AND u.status = 'ENABLED'
+    </select>
+    <select id="countEnabledUser" resultType="int">
+        SELECT COUNT(*) FROM sys_user WHERE id = #{userId} AND status = 'ENABLED'
+    </select>
+    <insert id="insertUserRole">
+        INSERT INTO sys_user_role (id, user_id, role_id, create_by, modify_by)
+        VALUES (#{id}, #{userId}, #{roleId}, #{createBy}, #{modifyBy})
+    </insert>
+    <select id="findButtonMenuId" resultType="long">
+        SELECT menu_id FROM sys_button WHERE id = #{buttonId}
+    </select>
+    <select id="findMenuParentId" resultType="long">
+        SELECT parent_id FROM sys_menu WHERE id = #{menuId}
+    </select>
+    <insert id="insertRoleMenu">
+        INSERT INTO sys_role_menu (id, role_id, menu_id) VALUES (#{id}, #{roleId}, #{menuId})
+    </insert>
+    <insert id="insertRoleButton">
+        INSERT INTO sys_role_button (id, role_id, button_id) VALUES (#{id}, #{roleId}, #{buttonId})
+    </insert>
+    <select id="findSessionUserId" resultType="long">
+        SELECT user_id FROM sys_user_session WHERE id = #{sessionId} AND tenant_id = #{tenantId}
+    </select>
+    <select id="findRoleIdsByUser" resultType="long">
+        SELECT role_id FROM sys_user_role WHERE user_id = #{userId}
+    </select>
+    <select id="findMenuIdsByRole" resultType="long">
+        SELECT menu_id FROM sys_role_menu WHERE role_id = #{roleId}
+    </select>
+    <select id="findButtonIdsByRole" resultType="long">
+        SELECT button_id FROM sys_role_button WHERE role_id = #{roleId}
+    </select>
+    <select id="findActiveSessionIds" resultType="long">
+        SELECT id FROM sys_user_session WHERE user_id = #{userId} AND status = 'ACTIVE'
+    </select>
+    <select id="findSuperRoleIds" resultType="long">
+        SELECT id FROM sys_role WHERE role_code = 'R_SUPER'
+    </select>
+    <insert id="insertSuperMenu">
+        INSERT IGNORE INTO sys_role_menu (id, role_id, menu_id) VALUES (#{id}, #{roleId}, #{menuId})
+    </insert>
+    <insert id="insertSuperButton">
+        INSERT IGNORE INTO sys_role_button (id, role_id, button_id) VALUES (#{id}, #{roleId}, #{buttonId})
+    </insert>
 </mapper>

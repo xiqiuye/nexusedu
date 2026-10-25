@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import java.util.*;
 
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -23,12 +22,10 @@ import com.xqy.nexusedu.knowledge.catalog.infrastructure.persistence.KnowledgeMa
 public class KnowledgeManagementServiceImpl implements KnowledgeManagementService {
     private final AuthorizationPolicy authorization;
     private final KnowledgeManagementStore store;
-    private final JdbcTemplate jdbc;
     private final DocumentChunker chunker;
     private final KnowledgeDocumentUploadService documentUpload;
 
-    public KnowledgeManagementServiceImpl(JdbcTemplate jdbc, DocumentChunker chunker, KnowledgeDocumentUploadService documentUpload, AuthorizationPolicy authorization, KnowledgeManagementStore store) {
-        this.jdbc = jdbc;
+    public KnowledgeManagementServiceImpl(DocumentChunker chunker, KnowledgeDocumentUploadService documentUpload, AuthorizationPolicy authorization, KnowledgeManagementStore store) {
         this.chunker = chunker;
         this.documentUpload = documentUpload;
         this.authorization = authorization;
@@ -107,7 +104,7 @@ public class KnowledgeManagementServiceImpl implements KnowledgeManagementServic
         } catch (DataIntegrityViolationException error) {
             throw new ManagementConflictException("名称重复或字段不符合表结构");
         }
-        return ManagementRows.publicRow(jdbc.queryForMap("SELECT " + KnowledgeManagementResources.COLUMNS.get(resource) + " FROM " + store.table(resource) + " WHERE id=? AND tenant_id=?", id, caller.tenantId()));
+        return ManagementRows.publicRow(store.publicRow(resource, id, caller.tenantId()));
     }
 
     @Override
@@ -116,13 +113,13 @@ public class KnowledgeManagementServiceImpl implements KnowledgeManagementServic
         authorize(resource, "delete", caller);
         store.owned(resource, id, caller.tenantId());
         if (resource.equals("bases")) {
-            if (store.count("SELECT COUNT(*) FROM ai_knowledge_document WHERE tenant_id=? AND knowledge_base_id=?", caller.tenantId(), id) > 0)
+            if (store.countDocumentsForBase(caller.tenantId(), id) > 0)
                 throw new ManagementConflictException("知识库仍有文档，可先禁用知识库或删除文档");
-            jdbc.update("DELETE FROM ai_knowledge_base WHERE id=? AND tenant_id=?", id, caller.tenantId());
+            store.deleteBase(caller.tenantId(), id);
         } else if (resource.equals("documents")) {
-            if (store.count("SELECT COUNT(*) FROM ai_knowledge_ingestion_job j JOIN ai_knowledge_document_version v ON v.id=j.document_version_id AND v.tenant_id=j.tenant_id WHERE v.document_id=? AND j.tenant_id=? AND j.status IN ('PENDING','RUNNING')", id, caller.tenantId()) > 0)
+            if (store.countPendingJobsForDocument(caller.tenantId(), id) > 0)
                 throw new ManagementConflictException("请先取消或完成此文档的入库任务");
-            jdbc.update("UPDATE ai_knowledge_document SET status='DELETED',modify_by=? WHERE id=? AND tenant_id=?", caller.userId().toString(), id, caller.tenantId());
+            store.softDeleteDocument(caller.tenantId(), id, caller.userId().toString());
         } else throw new IllegalArgumentException("不能直接删除版本、分块或任务记录");
     }
 
@@ -139,10 +136,11 @@ public class KnowledgeManagementServiceImpl implements KnowledgeManagementServic
         Map<String, Object> job = store.owned("jobs", id, caller.tenantId());
         if (!List.of("FAILED", "CANCELLED").contains(job.get("status")))
             throw new ManagementConflictException("仅失败或取消的任务可以重试");
-        if (store.count("SELECT COUNT(*) FROM ai_knowledge_document_version v JOIN ai_knowledge_document d ON d.id=v.document_id AND d.tenant_id=v.tenant_id JOIN ai_knowledge_base b ON b.id=d.knowledge_base_id AND b.tenant_id=d.tenant_id WHERE v.id=? AND v.tenant_id=? AND d.status='ACTIVE' AND b.enabled=1", job.get("document_version_id"), caller.tenantId()) != 1)
+        Long versionId = Long.valueOf(job.get("document_version_id").toString());
+        if (store.countActiveVersion(caller.tenantId(), versionId) != 1)
             throw new ManagementConflictException("文档已删除或知识库已禁用");
-        jdbc.update("UPDATE ai_knowledge_ingestion_job SET status='PENDING',progress=0,processed_chunks=0,cancel_requested=0,retry_count=retry_count+1,error_message=NULL,finish_time=NULL,worker_token=NULL,lease_expire_time=NULL WHERE id=? AND tenant_id=? AND status IN ('FAILED','CANCELLED')", id, caller.tenantId());
-        jdbc.update("UPDATE ai_knowledge_document_version v SET index_status='PENDING',error_message=NULL WHERE id=? AND tenant_id=? AND NOT EXISTS (SELECT 1 FROM ai_knowledge_ingestion_job j WHERE j.document_version_id=v.id AND j.tenant_id=v.tenant_id AND CAST(j.index_revision AS UNSIGNED)>?)", job.get("document_version_id"), caller.tenantId(), Integer.parseInt(job.get("index_revision").toString()));
+        store.retryJob(caller.tenantId(), id);
+        store.retryVersion(caller.tenantId(), versionId, Integer.parseInt(job.get("index_revision").toString()));
     }
 
     @Override
@@ -150,7 +148,7 @@ public class KnowledgeManagementServiceImpl implements KnowledgeManagementServic
     public void cancelJob(Long id, InternalCallContext caller) {
         authorize("jobs", "cancel", caller);
         store.owned("jobs", id, caller.tenantId());
-        jdbc.update("UPDATE ai_knowledge_ingestion_job SET cancel_requested=1,status=CASE WHEN status='PENDING' THEN 'CANCELLED' ELSE status END,finish_time=CASE WHEN status='PENDING' THEN CURRENT_TIMESTAMP(3) ELSE finish_time END WHERE id=? AND tenant_id=? AND status IN ('PENDING','RUNNING')", id, caller.tenantId());
+        store.cancelJob(caller.tenantId(), id);
     }
 
     private String snake(String key) {

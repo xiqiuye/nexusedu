@@ -13,10 +13,10 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import com.xqy.nexusedu.ai.task.domain.model.AiExecutionContext;
 import com.xqy.nexusedu.ai.governance.infrastructure.governance.AiAdmissionService;
+import com.xqy.nexusedu.ai.operations.infrastructure.persistence.mapper.AiObservationMapper;
 
 /** Durable observations. Failure to write telemetry must never change a business result. */
 @Service
@@ -24,10 +24,10 @@ public class AiObservationService {
     @Autowired
     private AiAdmissionService admission;
     private static final Logger log = LoggerFactory.getLogger(AiObservationService.class);
-    private final JdbcTemplate jdbc;
+    private final AiObservationMapper mapper;
     private final AtomicLong writeFailures = new AtomicLong();
 
-    public AiObservationService(JdbcTemplate jdbc) { this.jdbc = jdbc; }
+    public AiObservationService(AiObservationMapper mapper) { this.mapper = mapper; }
 
     public static class Scope {
         private String tenantId;
@@ -74,14 +74,10 @@ public class AiObservationService {
         Call call = new Call(scope, provider, model);
         call.price = price(scope.tenantId(), provider, model, call.startedAt);
         if(admission!=null)admission.model(scope,provider,model,call.id,call.price);
-        safe(() -> requiredUpdate("""
-                INSERT INTO ai_model_call_log
-                (id,call_id,logical_call_id,attempt,tenant_id,request_id,run_id,job_id,operation,provider,requested_model,model_name,started_at,
-                 price_version_id,currency,input_price,cached_input_price,output_price)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-                """, IdWorker.getId(), call.id, logicalCallId, attempt, scope.tenantId(), scope.requestId(), scope.runId(), scope.jobId(),
-                operation, provider, model, model, call.startedAt, call.price.get("id"), call.price.get("currency"),
-                call.price.get("input_price"), call.price.get("cached_input_price"), call.price.get("output_price")));
+        safe(() -> requiredUpdate(mapper.insertModelCall(IdWorker.getId(), call.id, logicalCallId, attempt, scope.tenantId(),
+                scope.requestId(), scope.runId(), scope.jobId(), operation, provider, model, model, call.startedAt,
+                call.price.get("id"), call.price.get("currency"), call.price.get("input_price"),
+                call.price.get("cached_input_price"), call.price.get("output_price"))));
         // Model latency starts after observer setup; database/price lookup overhead is not upstream time.
         call.startNanos = System.nanoTime();
         return call;
@@ -91,12 +87,8 @@ public class AiObservationService {
         Scope scope = Scope.chat(context);
         if (scope == null || scope.tenantId() == null || scope.tenantId().isBlank()) return null;
         Observation observation = new Observation(scope);
-        safe(() -> requiredUpdate("""
-                INSERT INTO ai_execution_observation
-                (id,observation_id,tenant_id,request_id,run_id,step_id,kind,tool_name,attempt,started_at)
-                VALUES (?,?,?,?,?,?,?,?,?,?)
-                """, IdWorker.getId(), observation.id, scope.tenantId(), scope.requestId(), scope.runId(), stepId,
-                kind, tool, attempt, observation.startedAt));
+        safe(() -> requiredUpdate(mapper.insertObservation(IdWorker.getId(), observation.id, scope.tenantId(),
+                scope.requestId(), scope.runId(), stepId, kind, tool, attempt, observation.startedAt)));
         return observation;
     }
 
@@ -104,12 +96,8 @@ public class AiObservationService {
 
     private Map<String, Object> price(String tenant, String provider, String model, LocalDateTime at) {
         try {
-            var rows = jdbc.queryForList("""
-                    SELECT id,currency,input_price,cached_input_price,output_price FROM ai_model_price_version
-                    WHERE tenant_id=? AND provider=? AND model_name=? AND enabled=1 AND effective_from<=?
-                    ORDER BY effective_from DESC,id DESC LIMIT 1
-                    """, tenant, provider, model, at);
-            return rows.isEmpty() ? Map.of() : rows.getFirst();
+            Map<String, Object> row = mapper.findPrice(tenant, provider, model, at);
+            return row == null ? Map.of() : row;
         } catch (Exception error) { failed(error); return Map.of(); }
     }
 
@@ -117,8 +105,8 @@ public class AiObservationService {
         try { action.run(); } catch (Exception error) { failed(error); }
     }
 
-    private void requiredUpdate(String sql, Object... args) {
-        if (jdbc.update(sql, args) != 1) throw new IllegalStateException("Observation row was not persisted");
+    private void requiredUpdate(int updated) {
+        if (updated != 1) throw new IllegalStateException("Observation row was not persisted");
     }
 
     private void failed(Exception error) {
@@ -198,22 +186,16 @@ public class AiObservationService {
             String costStatus = amount != null ? "ESTIMATED" : price.isEmpty() ? "UNKNOWN_PRICE" : "UNKNOWN_USAGE";
             if (terminal) {
                 // Late reported usage can settle a cancelled call, but cannot replace its outcome or duration.
-                if (input != null && output != null) safe(() -> jdbc.update("""
-                        UPDATE ai_model_call_log SET model_name=?,response_id=?,input_tokens=?,cached_input_tokens=?,output_tokens=?,
-                        usage_status=?,price_version_id=?,currency=?,input_price=?,cached_input_price=?,output_price=?,estimated_cost=?,cost_status=?
-                        WHERE call_id=? AND tenant_id=? AND usage_status='UNKNOWN'
-                        """, actual, responseId, input, cached, output, usageStatus, price.get("id"), price.get("currency"),
-                        price.get("input_price"), price.get("cached_input_price"), price.get("output_price"), amount, costStatus, id, scope.tenantId()));
+                if (input != null && output != null) safe(() -> mapper.updateLateModelCall(id, scope.tenantId(), actual,
+                        responseId, input, cached, output, usageStatus, price.get("id"), price.get("currency"),
+                        price.get("input_price"), price.get("cached_input_price"), price.get("output_price"), amount, costStatus));
                 if(admission!=null)safe(()->admission.settle(id,amount,(String)price.get("currency")));
                 return;
             }
             terminal = true;
-            safe(() -> requiredUpdate("""
-                    UPDATE ai_model_call_log SET outcome=?,error_category=?,finished_at=?,duration_ms=?,ttft_ms=?,model_name=?,response_id=?,
-                    input_tokens=?,cached_input_tokens=?,output_tokens=?,usage_status=?,price_version_id=?,currency=?,input_price=?,cached_input_price=?,output_price=?,estimated_cost=?,cost_status=?
-                    WHERE call_id=? AND tenant_id=? AND outcome='IN_PROGRESS'
-                    """, outcome, category, finishedAt, duration, ttft, actual, responseId, input, cached, output, usageStatus,
-                    price.get("id"), price.get("currency"), price.get("input_price"), price.get("cached_input_price"), price.get("output_price"), amount, costStatus, id, scope.tenantId()));
+            safe(() -> requiredUpdate(mapper.finishModelCall(id, scope.tenantId(), outcome, category, finishedAt, duration,
+                    ttft, actual, responseId, input, cached, output, usageStatus, price.get("id"), price.get("currency"),
+                    price.get("input_price"), price.get("cached_input_price"), price.get("output_price"), amount, costStatus)));
             if(admission!=null)safe(()->admission.settle(id,amount,(String)price.get("currency")));
         }
 
@@ -230,11 +212,9 @@ public class AiObservationService {
         public synchronized void finish(String outcome, Integer resultCount, Throwable error) {
             if (terminal) return;
             terminal = true;
-            safe(() -> requiredUpdate("""
-                    UPDATE ai_execution_observation SET outcome=?,error_category=?,result_count=?,finished_at=?,duration_ms=?
-                    WHERE observation_id=? AND tenant_id=? AND outcome='IN_PROGRESS'
-                    """, outcome, error == null ? null : error.getClass().getSimpleName(), resultCount, LocalDateTime.now(),
-                    (System.nanoTime() - startNanos) / 1_000_000, id, scope.tenantId()));
+            safe(() -> requiredUpdate(mapper.finishObservation(id, scope.tenantId(), outcome,
+                    error == null ? null : error.getClass().getSimpleName(), resultCount, LocalDateTime.now(),
+                    (System.nanoTime() - startNanos) / 1_000_000)));
         }
     }
 }

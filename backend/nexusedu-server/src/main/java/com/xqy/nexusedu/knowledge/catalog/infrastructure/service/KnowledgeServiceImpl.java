@@ -1,16 +1,13 @@
 package com.xqy.nexusedu.knowledge.catalog.infrastructure.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.xqy.nexusedu.knowledge.retrieval.application.model.KnowledgeVectorQuery;
@@ -38,8 +35,6 @@ public class KnowledgeServiceImpl implements KnowledgeService {
     private final AiKnowledgeIngestionJobMapper jobMapper;
     private final MilvusVectorStore vectorStore;
     private final InternalCallSigner internalCallSigner;
-    @Autowired
-    private JdbcTemplate metadata;
 
     public KnowledgeServiceImpl(AiKnowledgeBaseMapper baseMapper, AiKnowledgeDocumentMapper documentMapper,
                                 AiKnowledgeDocumentVersionMapper versionMapper, AiKnowledgeIngestionJobMapper jobMapper,
@@ -189,11 +184,7 @@ public class KnowledgeServiceImpl implements KnowledgeService {
             }
         }
         var activeVersions = new LinkedHashMap<Long, String>();
-        String sql = "SELECT v.id,v.active_index_revision FROM ai_knowledge_document_version v JOIN ai_knowledge_document d ON d.id=v.document_id AND d.tenant_id=v.tenant_id JOIN ai_knowledge_base b ON b.id=d.knowledge_base_id AND b.tenant_id=d.tenant_id WHERE v.tenant_id=? AND b.enabled=1 AND d.status='ACTIVE' AND v.active_index_revision IS NOT NULL";
-        List<Object> args = new ArrayList<>();
-        args.add(query.getTenantId());
-        if (query.getKnowledgeBaseId() != null) { sql += " AND b.id=?"; args.add(query.getKnowledgeBaseId()); }
-        for (var row : metadata.queryForList(sql, args.toArray()))
+        for (var row : versionMapper.findActiveIndexRevisions(query.getTenantId(), query.getKnowledgeBaseId()))
             activeVersions.put(((Number) row.get("id")).longValue(), row.get("active_index_revision").toString());
         effective.setActiveVersions(activeVersions);
         if (activeVersions.isEmpty()) return Collections.emptyList();

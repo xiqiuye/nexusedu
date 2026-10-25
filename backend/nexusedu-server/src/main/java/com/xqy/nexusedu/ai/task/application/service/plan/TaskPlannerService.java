@@ -17,7 +17,7 @@ import com.xqy.nexusedu.ai.model.infrastructure.llm.model.ModelRegistry;
 import com.xqy.nexusedu.ai.model.infrastructure.llm.model.ObservedChatModel;
 import com.xqy.nexusedu.ai.governance.infrastructure.governance.AiGovernanceRuntime;
 import com.xqy.nexusedu.ai.operations.infrastructure.observability.observation.AiObservationService;
-import com.xqy.nexusedu.ai.governance.infrastructure.governance.prompt.AiPromptTemplateService;
+import com.xqy.nexusedu.ai.governance.service.impl.AiPromptTemplateService;
 
 /**
  * Creates and validates the structured plan; it does not execute tools or send SSE events.

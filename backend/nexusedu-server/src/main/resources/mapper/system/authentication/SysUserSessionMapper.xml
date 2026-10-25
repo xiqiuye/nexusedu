@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xqy.nexusedu.system.authentication.infrastructure.persistence.mapper.SysUserSessionMapper">
+    <select id="selectByIdForUpdate"
+            resultType="com.xqy.nexusedu.system.authentication.infrastructure.persistence.entity.SysUserSession">
+        SELECT *
+        FROM sys_user_session
+        WHERE id = #{id}
+        FOR UPDATE
+    </select>
+
+    <select id="countValidSession" resultType="int">
+        SELECT COUNT(*)
+        FROM sys_user_session s
+        JOIN sys_user u ON u.id = s.user_id
+        WHERE s.id = #{sessionId}
+          AND s.user_id = #{userId}
+          AND s.tenant_id = #{tenantId}
+          AND u.tenant_id = s.tenant_id
+          AND s.status = 'ACTIVE'
+          AND s.expire_time > CURRENT_TIMESTAMP
+          AND u.status = 'ENABLED'
+    </select>
+</mapper>

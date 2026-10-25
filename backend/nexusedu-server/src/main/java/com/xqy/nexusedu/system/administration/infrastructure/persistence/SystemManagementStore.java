@@ -1,7 +1,6 @@
 package com.xqy.nexusedu.system.administration.infrastructure.persistence;
 
 import java.util.Map;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import com.xqy.nexusedu.shared.kernel.application.dto.ManagementRows;
 import com.xqy.nexusedu.shared.kernel.application.dto.PageResult;
@@ -11,11 +10,9 @@ import com.xqy.nexusedu.shared.kernel.infrastructure.security.rpc.InternalCallCo
 /** Persistence operations for the system administration resources. */
 @Repository
 public class SystemManagementStore {
-    private final JdbcTemplate jdbc;
     private final SystemManagementMapper mapper;
 
-    public SystemManagementStore(JdbcTemplate jdbc, SystemManagementMapper mapper) {
-        this.jdbc = jdbc;
+    public SystemManagementStore(SystemManagementMapper mapper) {
         this.mapper = mapper;
     }
 
@@ -53,8 +50,4 @@ public class SystemManagementStore {
         mapper.updateResource(resource, id, values);
     }
 
-    public int count(String sql, Object... args) {
-        Integer value = jdbc.queryForObject(sql, Integer.class, args);
-        return value == null ? 0 : value;
-    }
 }

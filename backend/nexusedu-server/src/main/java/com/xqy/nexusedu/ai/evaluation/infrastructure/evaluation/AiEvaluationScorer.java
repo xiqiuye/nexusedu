@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.*;
 import java.util.regex.Pattern;
-import com.xqy.nexusedu.ai.evaluation.application.model.AiEvaluationScore;
+import com.xqy.nexusedu.ai.evaluation.vo.AiEvaluationScore;
 
 /** Deterministic golden-set evaluation, not an LLM judge. */
 public final class AiEvaluationScorer {

@@ -20,7 +20,7 @@ import com.xqy.nexusedu.ai.task.application.exception.AiRunAccessDeniedException
 import com.xqy.nexusedu.ai.task.application.exception.AiRunNotFoundException;
 import com.xqy.nexusedu.shared.kernel.application.exception.ManagementNotFoundException;
 import com.xqy.nexusedu.ai.task.domain.constant.AiTaskRunStatus;
-import com.xqy.nexusedu.ai.chat.infrastructure.persistence.mapper.AiChatConversationMapper;
+import com.xqy.nexusedu.ai.chat.mapper.AiChatConversationMapper;
 import com.xqy.nexusedu.ai.task.infrastructure.persistence.mapper.AiTaskRunMapper;
 import com.xqy.nexusedu.ai.task.infrastructure.persistence.mapper.AiTaskStepMapper;
 
