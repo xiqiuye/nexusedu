@@ -1,2 +1,5 @@
 # Keep local environment files and their secrets out of version control.
 **/.env
+# Local deployment secrets and selected image version.
+deploy/.env
+deploy/.deploy.env
