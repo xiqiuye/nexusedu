@@ -1,6 +1,8 @@
 # Changelog
 
 ## 2026-10-26
+- 修复后端 MyBatis 扫描范围过宽导致 `ModelAdapter` 被误注册为 Mapper、项目启动失败的问题。
+- Consolidated system_data_init.sql into data_init.sql, retained its legacy RBAC links, and fixed invalid role_id references in student role initialization.
 - 用Spring管理的任务和SSE线程池取代了非托管线程创建，包括可配置的大小、队列容量、线程名称和正常关闭。
 - 删除了AiStreamEventPublisher接口，并将RedisStreamEventPublisher直接注入聊天工作流服务。
 - 将AI评估、治理、模型、操作、任务和工具模块以及知识和系统业务模块从DDD包层迁移到传统的控制器/服务/dto/实体/映射器包，更新导入和MyBatis XML名称空间。

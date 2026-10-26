@@ -409,12 +409,25 @@ INSERT INTO sys_menu(id,parent_id,path,route_name,component,title,icon,sort_no,k
 (1701,1700,'roster','StudentRoster','/student','学生档案','ri:contacts-line',10,0,1,0,0,0,'ENABLED','migration','migration')
 ON DUPLICATE KEY UPDATE title=VALUES(title),component=VALUES(component),status='ENABLED';
 INSERT INTO sys_role_menu(id,role_id,menu_id,create_by,modify_by)
-SELECT 170000+role_id*10+menu_id,role_id,menu_id,'migration','migration' FROM sys_role CROSS JOIN (SELECT 1700 AS menu_id UNION ALL SELECT 1701) m WHERE role_code IN ('R_SUPER','R_SCHOOL_ADMIN','R_CAMPUS_ADMIN','R_HOMEROOM','R_TEACHER')
+SELECT 170000+r.id*10+m.menu_id,r.id,m.menu_id,'migration','migration'
+FROM sys_role r CROSS JOIN (SELECT 1700 AS menu_id UNION ALL SELECT 1701) m
+WHERE r.role_code IN ('R_SUPER','R_SCHOOL_ADMIN','R_CAMPUS_ADMIN','R_HOMEROOM','R_TEACHER')
 ON DUPLICATE KEY UPDATE menu_id=VALUES(menu_id);
 INSERT INTO sys_button(id,menu_id,button_name,auth_remark,description,sort_no,status,create_by,modify_by) VALUES
 (1701,1701,'查看学生','student:read','查看授权范围内学生',10,'ENABLED','migration','migration'),
 (1702,1701,'维护学生','student:write','维护授权范围内学生',20,'ENABLED','migration','migration')
 ON DUPLICATE KEY UPDATE auth_remark=VALUES(auth_remark),status='ENABLED';
 INSERT INTO sys_role_button(id,role_id,button_id,create_by,modify_by)
-SELECT 180000+role_id*10+button_id,role_id,button_id,'migration','migration' FROM sys_role CROSS JOIN (SELECT 1701 AS button_id UNION ALL SELECT 1702) b WHERE role_code IN ('R_SUPER','R_SCHOOL_ADMIN','R_CAMPUS_ADMIN','R_HOMEROOM','R_TEACHER')
+SELECT 180000+r.id*10+b.button_id,r.id,b.button_id,'migration','migration'
+FROM sys_role r CROSS JOIN (SELECT 1701 AS button_id UNION ALL SELECT 1702) b
+WHERE r.role_code IN ('R_SUPER','R_SCHOOL_ADMIN','R_CAMPUS_ADMIN','R_HOMEROOM','R_TEACHER')
 ON DUPLICATE KEY UPDATE button_id=VALUES(button_id);
+
+-- Legacy system_data_init role links retained in the consolidated bootstrap.
+INSERT INTO sys_role_menu (id, role_id, menu_id)
+VALUES (1401, 1101, 1301), (1402, 1101, 1302), (1403, 1101, 1303)
+ON DUPLICATE KEY UPDATE role_id = VALUES(role_id), menu_id = VALUES(menu_id);
+
+INSERT INTO sys_role_button (id, role_id, button_id)
+VALUES (1601, 1101, 1501), (1602, 1101, 1502), (1603, 1101, 1503), (1604, 1101, 1504)
+ON DUPLICATE KEY UPDATE role_id = VALUES(role_id), button_id = VALUES(button_id);
