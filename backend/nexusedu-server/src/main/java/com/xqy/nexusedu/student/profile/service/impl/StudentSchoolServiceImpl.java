@@ -18,7 +18,7 @@ import com.xqy.nexusedu.shared.kernel.application.exception.ManagementNotFoundEx
 import com.xqy.nexusedu.shared.kernel.application.gateway.AuthorizationPolicy;
 import com.xqy.nexusedu.shared.kernel.infrastructure.security.rpc.InternalCallContext;
 import com.xqy.nexusedu.student.profile.mapper.StudentSchoolMapper;
-import com.xqy.nexusedu.system.authentication.infrastructure.persistence.mapper.SysAuthorizationMapper;
+import com.xqy.nexusedu.system.authentication.mapper.SysAuthorizationMapper;
 
 /** School-scoped student, campus and classroom use cases. */
 @Service

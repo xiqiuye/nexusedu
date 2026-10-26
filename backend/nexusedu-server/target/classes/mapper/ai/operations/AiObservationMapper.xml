@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.xqy.nexusedu.ai.operations.infrastructure.persistence.mapper.AiObservationMapper">
+<mapper namespace="com.xqy.nexusedu.ai.operations.mapper.AiObservationMapper">
     <select id="findPrice" resultType="map">
         SELECT id,currency,input_price,cached_input_price,output_price
         FROM ai_model_price_version

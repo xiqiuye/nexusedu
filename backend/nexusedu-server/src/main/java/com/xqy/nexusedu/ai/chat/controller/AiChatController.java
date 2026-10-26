@@ -9,6 +9,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.redis.connection.stream.MapRecord;
 import org.springframework.data.redis.connection.stream.ReadOffset;
 import org.springframework.data.redis.connection.stream.StreamOffset;
@@ -26,11 +28,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import com.xqy.nexusedu.ai.chat.dto.AiChatCommand;
 import com.xqy.nexusedu.ai.chat.dto.AiChatRequest;
-import com.xqy.nexusedu.system.authentication.application.model.AuthDtos;
-import com.xqy.nexusedu.ai.task.domain.model.AiExecutionContext;
-import com.xqy.nexusedu.ai.task.application.model.AiRunView;
-import com.xqy.nexusedu.ai.chat.service.impl.AiChatCommandService;
-import com.xqy.nexusedu.ai.operations.application.AiOperationsService;
+import com.xqy.nexusedu.system.authentication.dto.AuthDtos;
+import com.xqy.nexusedu.ai.task.model.AiExecutionContext;
+import com.xqy.nexusedu.ai.task.dto.AiRunView;
+import com.xqy.nexusedu.ai.chat.service.AiChatCommandService;
+import com.xqy.nexusedu.ai.operations.service.AiOperationsService;
 import com.xqy.nexusedu.shared.kernel.application.dto.ApiResponse;
 import com.xqy.nexusedu.shared.kernel.infrastructure.security.rpc.InternalCallContext;
 import com.xqy.nexusedu.shared.kernel.infrastructure.security.rpc.InternalCallSigner;
@@ -48,10 +50,14 @@ public class AiChatController {
     private AiOperationsService operations;
     private final StringRedisTemplate redis;
     private final InternalCallSigner internalCallSigner;
+    private final TaskExecutor sseExecutor;
 
-    public AiChatController(StringRedisTemplate redis, @Value("${nexusedu.internal-rpc.secret}") String internalRpcSecret) {
+    public AiChatController(StringRedisTemplate redis,
+                            @Value("${nexusedu.internal-rpc.secret}") String internalRpcSecret,
+                            @Qualifier("aiSseExecutor") TaskExecutor sseExecutor) {
         this.redis = redis;
         this.internalCallSigner = new InternalCallSigner(internalRpcSecret);
+        this.sseExecutor = sseExecutor;
     }
 
     @PostMapping(value = "/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE + ";charset=UTF-8")
@@ -89,7 +95,7 @@ public class AiChatController {
         emitter.onCompletion(() -> closed.set(true));
         emitter.onTimeout(() -> closed.set(true));
         emitter.onError(error -> closed.set(true));
-        Thread.ofVirtual().start(() -> relay(runId, delivery.get("streamKey") == null ? null : delivery.get("streamKey").toString(), after, emitter, closed, user));
+        sseExecutor.execute(() -> relay(runId, delivery.get("streamKey") == null ? null : delivery.get("streamKey").toString(), after, emitter, closed, user));
         return emitter;
     }
 

@@ -8,7 +8,7 @@ import com.xqy.nexusedu.shared.kernel.application.dto.ApiResponse;
 import com.xqy.nexusedu.shared.kernel.application.dto.PageResult;
 import com.xqy.nexusedu.shared.kernel.infrastructure.security.rpc.InternalCallContext;
 import com.xqy.nexusedu.student.profile.service.StudentSchoolService;
-import com.xqy.nexusedu.system.authentication.infrastructure.RpcCaller;
+import com.xqy.nexusedu.system.authentication.service.RpcCaller;
 
 @RestController
 @RequestMapping("/api/school")

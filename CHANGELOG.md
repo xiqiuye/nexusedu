@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-26
+- 用Spring管理的任务和SSE线程池取代了非托管线程创建，包括可配置的大小、队列容量、线程名称和正常关闭。
+- 删除了AiStreamEventPublisher接口，并将RedisStreamEventPublisher直接注入聊天工作流服务。
+- 将AI评估、治理、模型、操作、任务和工具模块以及知识和系统业务模块从DDD包层迁移到传统的控制器/服务/dto/实体/映射器包，更新导入和MyBatis XML名称空间。
+
 ## 2026-10-22
 - 删除 AI 聊天应用服务接口，控制器直接注入保留的 `AiChatCommandService` 实现类。
 - 将 AI 聊天持久化中的会话历史更新改为 MyBatis-Plus 条件构造器，并将聊天 Mapper 注解 SQL 迁移到 XML。

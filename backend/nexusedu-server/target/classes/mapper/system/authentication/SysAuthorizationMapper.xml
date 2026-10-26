@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.xqy.nexusedu.system.authentication.infrastructure.persistence.mapper.SysAuthorizationMapper">
+<mapper namespace="com.xqy.nexusedu.system.authentication.mapper.SysAuthorizationMapper">
     <select id="findRoleCodes" resultType="string" useCache="false" flushCache="true">
         SELECT r.role_code
         FROM sys_role r
@@ -18,7 +18,7 @@
     </select>
 
     <select id="findMenus"
-            resultType="com.xqy.nexusedu.system.administration.infrastructure.persistence.entity.SysMenu">
+            resultType="com.xqy.nexusedu.system.administration.entity.SysMenu">
         SELECT DISTINCT m.*
         FROM sys_menu m
         INNER JOIN sys_role_menu rm ON rm.menu_id = m.id
@@ -29,7 +29,7 @@
     </select>
 
     <select id="findMenuButtons"
-            resultType="com.xqy.nexusedu.system.authentication.application.model.SystemAuthModels$Button">
+            resultType="com.xqy.nexusedu.system.authentication.dto.SystemAuthModels$Button">
         SELECT b.button_name AS title, b.auth_remark AS auth_mark
         FROM sys_button b
         INNER JOIN sys_role_button rb ON rb.button_id = b.id

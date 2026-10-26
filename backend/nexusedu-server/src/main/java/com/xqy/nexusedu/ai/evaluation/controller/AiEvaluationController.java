@@ -9,7 +9,7 @@ import com.xqy.nexusedu.ai.evaluation.service.AiEvaluationService;
 import com.xqy.nexusedu.shared.kernel.application.dto.ApiResponse;
 import com.xqy.nexusedu.shared.kernel.application.dto.PageResult;
 import com.xqy.nexusedu.ai.evaluation.dto.AiEvaluationDtos;
-import com.xqy.nexusedu.system.authentication.infrastructure.RpcCaller;
+import com.xqy.nexusedu.system.authentication.service.RpcCaller;
 
 @RestController
 @RequestMapping("/api/ai/evaluation")

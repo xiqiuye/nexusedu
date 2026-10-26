@@ -3,7 +3,7 @@ package com.xqy.nexusedu.ai.chat.dto;
 import java.io.Serializable;
 
 import com.xqy.nexusedu.shared.kernel.infrastructure.security.rpc.InternalCallContext;
-import com.xqy.nexusedu.ai.task.domain.model.AiExecutionContext;
+import com.xqy.nexusedu.ai.task.model.AiExecutionContext;
 
 public class AiChatCommand implements Serializable {
     private static final long serialVersionUID = 1L;

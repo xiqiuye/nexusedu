@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.xqy.nexusedu.system.administration.infrastructure.persistence.SystemManagementMapper">
+<mapper namespace="com.xqy.nexusedu.system.administration.mapper.SystemManagementMapper">
     <sql id="table">
         <choose>
             <when test="resource == 'users'">sys_user</when>

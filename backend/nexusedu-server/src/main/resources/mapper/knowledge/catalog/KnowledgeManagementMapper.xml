@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.xqy.nexusedu.knowledge.catalog.infrastructure.persistence.KnowledgeManagementMapper">
+<mapper namespace="com.xqy.nexusedu.knowledge.catalog.mapper.KnowledgeManagementMapper">
     <sql id="table">
         <choose>
             <when test="resource == 'bases'">ai_knowledge_base</when>

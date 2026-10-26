@@ -8,7 +8,7 @@ import com.xqy.nexusedu.ai.governance.service.AiGovernanceService;
 import com.xqy.nexusedu.shared.kernel.application.dto.ApiResponse;
 import com.xqy.nexusedu.shared.kernel.application.dto.PageResult;
 import com.xqy.nexusedu.ai.governance.dto.AiGovernanceDtos;
-import com.xqy.nexusedu.system.authentication.infrastructure.RpcCaller;
+import com.xqy.nexusedu.system.authentication.service.RpcCaller;
 
 @RestController @RequestMapping("/api/ai/config")
 public class AiGovernanceController {

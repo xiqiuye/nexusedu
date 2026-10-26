@@ -1,0 +1,148 @@
+package com.xqy.nexusedu.knowledge.catalog.entity;
+
+import com.xqy.nexusedu.shared.kernel.infrastructure.persistence.entity.CommonEntity;
+
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
+
+import java.io.Serializable;
+
+@TableName("ai_knowledge_document_version")
+public class AiKnowledgeDocumentVersion extends CommonEntity implements Serializable {
+    @TableField("tenant_id")
+    private String tenantId;
+    @TableField("document_id")
+    private Long documentId;
+    private String version;
+    @TableField("source_uri")
+    private String sourceUri;
+    @TableField("source_version")
+    private String sourceVersion;
+    @TableField("mime_type")
+    private String mimeType;
+    @TableField("content_hash")
+    private String contentHash;
+    @TableField("active_index_revision")
+    private String activeIndexRevision;
+    @TableField("index_status")
+    private String indexStatus;
+    private Integer chunkCount;
+    private Integer chunkSize;
+    private Integer chunkOverlap;
+    private String splitStrategy;
+
+    public Integer getChunkSize() {
+        return chunkSize;
+    }
+
+    public void setChunkSize(Integer chunkSize) {
+        this.chunkSize = chunkSize;
+    }
+
+    public Integer getChunkOverlap() {
+        return chunkOverlap;
+    }
+
+    public void setChunkOverlap(Integer chunkOverlap) {
+        this.chunkOverlap = chunkOverlap;
+    }
+
+    public String getSplitStrategy() {
+        return splitStrategy;
+    }
+
+    public void setSplitStrategy(String splitStrategy) {
+        this.splitStrategy = splitStrategy;
+    }
+
+    @TableField("error_message")
+    private String errorMessage;
+
+    public Long getDocumentId() {
+        return documentId;
+    }
+
+    public String getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
+    }
+
+    public void setDocumentId(Long documentId) {
+        this.documentId = documentId;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public String getSourceUri() {
+        return sourceUri;
+    }
+
+    public void setSourceUri(String sourceUri) {
+        this.sourceUri = sourceUri;
+    }
+
+    public String getSourceVersion() {
+        return sourceVersion;
+    }
+
+    public void setSourceVersion(String sourceVersion) {
+        this.sourceVersion = sourceVersion;
+    }
+
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    public void setMimeType(String mimeType) {
+        this.mimeType = mimeType;
+    }
+
+    public String getContentHash() {
+        return contentHash;
+    }
+
+    public void setContentHash(String contentHash) {
+        this.contentHash = contentHash;
+    }
+
+    public String getActiveIndexRevision() {
+        return activeIndexRevision;
+    }
+
+    public void setActiveIndexRevision(String activeIndexRevision) {
+        this.activeIndexRevision = activeIndexRevision;
+    }
+
+    public String getIndexStatus() {
+        return indexStatus;
+    }
+
+    public void setIndexStatus(String indexStatus) {
+        this.indexStatus = indexStatus;
+    }
+
+    public Integer getChunkCount() {
+        return chunkCount;
+    }
+
+    public void setChunkCount(Integer chunkCount) {
+        this.chunkCount = chunkCount;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+}

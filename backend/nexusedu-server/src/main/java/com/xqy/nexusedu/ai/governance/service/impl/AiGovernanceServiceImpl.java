@@ -8,7 +8,7 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.xqy.nexusedu.ai.evaluation.infrastructure.evaluation.AiConfiguration;
+import com.xqy.nexusedu.ai.evaluation.service.AiConfiguration;
 import com.xqy.nexusedu.ai.governance.mapper.AiGovernanceMapper;
 import com.xqy.nexusedu.ai.governance.service.AiGovernanceService;
 import com.xqy.nexusedu.shared.kernel.application.dto.ManagementRows;

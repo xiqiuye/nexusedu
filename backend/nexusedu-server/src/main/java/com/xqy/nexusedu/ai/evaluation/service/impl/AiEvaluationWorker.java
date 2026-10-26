@@ -12,14 +12,14 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import com.xqy.nexusedu.ai.chat.service.impl.AiConversationLifecycle;
-import com.xqy.nexusedu.ai.chat.service.impl.ConversationServiceImpl;
-import com.xqy.nexusedu.ai.evaluation.infrastructure.evaluation.AiConfiguration;
-import com.xqy.nexusedu.ai.evaluation.infrastructure.evaluation.AiEvaluationScorer;
+import com.xqy.nexusedu.ai.chat.service.AiChatLifecycleService;
+import com.xqy.nexusedu.ai.chat.service.AiTaskService;
+import com.xqy.nexusedu.ai.evaluation.service.AiConfiguration;
+import com.xqy.nexusedu.ai.evaluation.service.AiEvaluationScorer;
 import com.xqy.nexusedu.ai.evaluation.mapper.AiEvaluationMapper;
 import com.xqy.nexusedu.ai.evaluation.service.AiEvaluationService;
-import com.xqy.nexusedu.ai.task.application.service.run.AiTaskRunService;
-import com.xqy.nexusedu.ai.task.domain.model.AiExecutionContext;
+import com.xqy.nexusedu.ai.task.service.run.AiTaskRunService;
+import com.xqy.nexusedu.ai.task.model.AiExecutionContext;
 import com.xqy.nexusedu.shared.kernel.application.gateway.AuthorizationPolicy;
 import com.xqy.nexusedu.shared.kernel.infrastructure.security.rpc.InternalCallContext;
 import com.xqy.nexusedu.shared.kernel.infrastructure.security.rpc.InternalCallSigner;
@@ -32,13 +32,13 @@ public class AiEvaluationWorker {
     private final TransactionTemplate transactions;
     private final InternalCallSigner signer;
     private final AiEvaluationService evaluations;
-    private final AiConversationLifecycle lifecycle;
+    private final AiChatLifecycleService lifecycle;
     private final AiTaskRunService runs;
-    private final ConversationServiceImpl workflow;
+    private final AiTaskService workflow;
     @Value("${nexusedu.ai.evaluation.case-timeout-ms:300000}") private long caseTimeoutMs = 300000;
 
     public AiEvaluationWorker(AiEvaluationMapper mapper, PlatformTransactionManager manager, AiEvaluationService evaluations,
-                              AiConversationLifecycle lifecycle, AiTaskRunService runs, ConversationServiceImpl workflow,
+                              AiChatLifecycleService lifecycle, AiTaskRunService runs, AiTaskService workflow,
                               @Value("${nexusedu.internal-rpc.secret}") String secret) {
         this.mapper = mapper; this.transactions = new TransactionTemplate(manager); this.evaluations = evaluations;
         this.lifecycle = lifecycle; this.runs = runs; this.workflow = workflow; this.signer = new InternalCallSigner(secret);

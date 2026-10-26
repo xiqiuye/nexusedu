@@ -10,7 +10,7 @@ import com.xqy.nexusedu.student.profile.vo.StudentData;
 import com.xqy.nexusedu.student.profile.service.StudentService;
 import com.xqy.nexusedu.student.profile.entity.Student;
 import com.xqy.nexusedu.student.profile.mapper.StudentMapper;
-import com.xqy.nexusedu.system.authentication.infrastructure.persistence.mapper.SysAuthorizationMapper;
+import com.xqy.nexusedu.system.authentication.mapper.SysAuthorizationMapper;
 
 /** Persistence-backed implementation of the student application port. */
 @Service

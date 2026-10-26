@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.xqy.nexusedu.ai.tools.infrastructure.persistence.mapper.AiRunSourceMapper">
+<mapper namespace="com.xqy.nexusedu.ai.tools.mapper.AiRunSourceMapper">
     <insert id="save">
         INSERT INTO ai_run_sources (tenant_id, run_id, conversation_id, sources_json)
         VALUES (#{tenantId}, #{runId}, #{conversationId}, #{sourcesJson})
