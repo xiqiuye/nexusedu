@@ -175,8 +175,19 @@
                     :key="x.id"
                     :label="`${x.campusName} · ${x.academicYear} · 小学${gradeLabel(x.grade)}${x.className}`"
                     :value="x.id" /></el-select></el-form-item
-              ><el-form-item label="教师账号 ID"
-                ><el-input v-model="homeroomForm.userId" /></el-form-item
+              ><el-form-item label="班主任"
+                ><el-select
+                  v-model="homeroomForm.userId"
+                  filterable
+                  remote
+                  reserve-keyword
+                  :remote-method="searchStaff"
+                  :loading="teacherLoading"
+                  ><el-option
+                    v-for="x in teachers"
+                    :key="x.userId"
+                    :label="teacherLabel(x)"
+                    :value="x.userId" /></el-select></el-form-item
               ><el-form-item label="任职开始日期"
                 ><el-date-picker
                   v-model="homeroomForm.startsOn"
@@ -204,8 +215,27 @@
                   />
                 </el-select>
               </el-form-item>
-              <el-form-item label="校内教师账号 ID" class="wide">
-                <el-input v-model="staffForm.userId" />
+              <el-form-item label="教师账号" class="wide">
+                <el-select
+                  v-model="staffForm.userId"
+                  filterable
+                  remote
+                  reserve-keyword
+                  :remote-method="searchStaff"
+                  :loading="teacherLoading"
+                >
+                  <el-option
+                    v-for="x in teachers"
+                    :key="x.userId"
+                    :label="teacherLabel(x)"
+                    :value="x.userId"
+                  />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="任教学科" class="wide">
+                <el-select v-model="staffForm.subjectId">
+                  <el-option v-for="x in subjects" :key="x.id" :label="x.name" :value="x.id" />
+                </el-select>
               </el-form-item>
             </div>
           </el-form>
@@ -316,14 +346,22 @@
   import { onMounted, reactive, ref } from 'vue'
   import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
   import * as XLSX from 'xlsx'
-  import { studentApi, type SchoolOption, type StudentRow } from '@/api/students'
+  import {
+    studentApi,
+    type SchoolOption,
+    type StudentRow,
+    type SchoolTeacher
+  } from '@/api/students'
   const rows = ref<StudentRow[]>([]),
     campuses = ref<SchoolOption[]>([]),
     years = ref<SchoolOption[]>([])
   const classes = ref<SchoolOption[]>([]),
     formClasses = ref<SchoolOption[]>([]),
     moveClasses = ref<SchoolOption[]>([]),
-    allClasses = ref<SchoolOption[]>([])
+    allClasses = ref<SchoolOption[]>([]),
+    teachers = ref<SchoolTeacher[]>([]),
+    subjects = ref<SchoolOption[]>([]),
+    teacherLoading = ref(false)
   const filters = reactive<Record<string, any>>({
     search: '',
     academicYearId: '',
@@ -376,7 +414,7 @@
     userId: '',
     startsOn: new Date().toISOString().slice(0, 10)
   })
-  const staffForm = reactive({ campusId: '', classId: '', userId: '' })
+  const staffForm = reactive({ campusId: '', classId: '', userId: '', subjectId: '' })
   const rules: FormRules = {
     studentNo: [{ required: true, message: '请填写学号', trigger: 'blur' }],
     name: [{ required: true, message: '请填写姓名', trigger: 'blur' }],
@@ -385,6 +423,16 @@
     grade: [{ required: true, message: '请选择年级', trigger: 'change' }]
   }
   const gradeLabel = (n: number) => ['', '一', '二', '三', '四', '五', '六'][n]
+  const teacherLabel = (teacher: SchoolTeacher) =>
+    `${teacher.realName || teacher.nickname || teacher.username}${teacher.employeeNo ? ` · ${teacher.employeeNo}` : ''}`
+  async function searchStaff(search: string) {
+    teacherLoading.value = true
+    try {
+      teachers.value = await studentApi.teachers(search)
+    } finally {
+      teacherLoading.value = false
+    }
+  }
   const statusLabel = (v?: string) =>
     ({
       ENROLLED: '在读',
@@ -431,6 +479,7 @@
   async function refreshSchoolOptions() {
     ;[campuses.value, years.value] = await Promise.all([studentApi.campuses(), studentApi.years()])
     allClasses.value = await studentApi.classes({})
+    subjects.value = await studentApi.subjects()
   }
   async function saveCampus() {
     saving.value = true
@@ -466,11 +515,11 @@
   async function saveHomeroom() {
     saving.value = true
     try {
-      await studentApi.assignHomeroom(
-        homeroomForm.classId,
-        homeroomForm.userId,
-        homeroomForm.startsOn
-      )
+      await studentApi.assignClassTeacher(homeroomForm.classId, {
+        userId: homeroomForm.userId,
+        type: 'HOMEROOM',
+        startsOn: homeroomForm.startsOn
+      })
       await refreshSchoolOptions()
       ElMessage.success('班主任任职已保存')
     } finally {
@@ -478,8 +527,7 @@
     }
   }
   async function saveCampusAdmin() {
-    if (!staffForm.campusId || !staffForm.userId)
-      return ElMessage.warning('请选择校区并填写账号 ID')
+    if (!staffForm.campusId || !staffForm.userId) return ElMessage.warning('请选择校区和教师')
     saving.value = true
     try {
       await studentApi.assignCampusAdmin(staffForm.campusId, staffForm.userId)
@@ -489,10 +537,15 @@
     }
   }
   async function saveTeacher() {
-    if (!staffForm.classId || !staffForm.userId) return ElMessage.warning('请选择班级并填写账号 ID')
+    if (!staffForm.classId || !staffForm.userId || !staffForm.subjectId)
+      return ElMessage.warning('请选择班级、教师和任教学科')
     saving.value = true
     try {
-      await studentApi.assignTeacher(staffForm.classId, staffForm.userId)
+      await studentApi.assignClassTeacher(staffForm.classId, {
+        userId: staffForm.userId,
+        subjectId: staffForm.subjectId,
+        type: 'SUBJECT'
+      })
       ElMessage.success('任课班级已设置')
     } finally {
       saving.value = false

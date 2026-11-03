@@ -17,7 +17,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         "com.xqy.nexusedu.ai.tools.mapper",
         "com.xqy.nexusedu.knowledge.catalog.mapper",
         "com.xqy.nexusedu.knowledge.ingestion.mapper",
-        "com.xqy.nexusedu.student.profile.mapper",
+        "com.xqy.nexusedu.education.student.profile.mapper",
+        "com.xqy.nexusedu.education.infrastructure.persistence.mapper",
         "com.xqy.nexusedu.system.administration.mapper",
         "com.xqy.nexusedu.system.authentication.mapper"
 })

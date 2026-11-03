@@ -77,6 +77,60 @@ CREATE TABLE IF NOT EXISTS student_guardian_contact (
  CONSTRAINT fk_guardian_student FOREIGN KEY(student_id) REFERENCES student(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- School staff, teaching assignments, promotion audit and assessment records.
+CREATE TABLE IF NOT EXISTS school_teacher (
+ id BIGINT NOT NULL AUTO_INCREMENT, tenant_id VARCHAR(64) NOT NULL, user_id BIGINT NOT NULL,
+ employee_no VARCHAR(64) NOT NULL, title VARCHAR(64) DEFAULT NULL, status VARCHAR(16) NOT NULL DEFAULT 'ACTIVE',
+ create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ PRIMARY KEY(id), UNIQUE KEY uk_teacher_tenant_user(tenant_id,user_id), UNIQUE KEY uk_teacher_tenant_no(tenant_id,employee_no),
+ KEY idx_teacher_status(tenant_id,status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS school_subject (
+ id BIGINT NOT NULL AUTO_INCREMENT, tenant_id VARCHAR(64) NOT NULL, subject_code VARCHAR(32) NOT NULL,
+ name VARCHAR(64) NOT NULL, grade_min TINYINT NOT NULL DEFAULT 1, grade_max TINYINT NOT NULL DEFAULT 6,
+ status VARCHAR(16) NOT NULL DEFAULT 'ACTIVE', PRIMARY KEY(id), UNIQUE KEY uk_subject_tenant_code(tenant_id,subject_code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS school_class_teacher (
+ id BIGINT NOT NULL AUTO_INCREMENT, tenant_id VARCHAR(64) NOT NULL, class_id BIGINT NOT NULL,
+ teacher_id BIGINT NOT NULL, subject_id BIGINT DEFAULT NULL, assignment_type VARCHAR(16) NOT NULL DEFAULT 'SUBJECT',
+ starts_on DATE NOT NULL, ends_on DATE DEFAULT NULL, PRIMARY KEY(id),
+ KEY idx_class_teacher_active(tenant_id,class_id,ends_on), KEY idx_teacher_class_active(tenant_id,teacher_id,ends_on),
+ CONSTRAINT fk_class_teacher_class FOREIGN KEY(class_id) REFERENCES school_class(id),
+ CONSTRAINT fk_class_teacher_teacher FOREIGN KEY(teacher_id) REFERENCES school_teacher(id),
+ CONSTRAINT fk_class_teacher_subject FOREIGN KEY(subject_id) REFERENCES school_subject(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS school_promotion_batch (
+ id BIGINT NOT NULL AUTO_INCREMENT, tenant_id VARCHAR(64) NOT NULL, campus_id BIGINT NOT NULL,
+ source_year_id BIGINT NOT NULL, target_year_id BIGINT NOT NULL, source_grade TINYINT NOT NULL,
+ status VARCHAR(16) NOT NULL DEFAULT 'CONFIRMED', created_by BIGINT NOT NULL, confirmed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ PRIMARY KEY(id), KEY idx_promotion_scope(tenant_id,campus_id,source_year_id,target_year_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS school_promotion_item (
+ id BIGINT NOT NULL AUTO_INCREMENT, tenant_id VARCHAR(64) NOT NULL, batch_id BIGINT NOT NULL,
+ student_id BIGINT NOT NULL, source_enrollment_id BIGINT NOT NULL, target_enrollment_id BIGINT DEFAULT NULL,
+ action VARCHAR(16) NOT NULL, target_grade TINYINT DEFAULT NULL, target_class_id BIGINT DEFAULT NULL,
+ reason VARCHAR(255) DEFAULT NULL, PRIMARY KEY(id), KEY idx_promotion_item_batch(tenant_id,batch_id),
+ KEY idx_promotion_item_student(tenant_id,student_id),
+ CONSTRAINT fk_promotion_item_batch FOREIGN KEY(batch_id) REFERENCES school_promotion_batch(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS school_exam (
+ id BIGINT NOT NULL AUTO_INCREMENT, tenant_id VARCHAR(64) NOT NULL, academic_year_id BIGINT NOT NULL,
+ campus_id BIGINT NOT NULL, grade TINYINT NOT NULL, name VARCHAR(128) NOT NULL, term VARCHAR(16) NOT NULL,
+ exam_date DATE NOT NULL, status VARCHAR(16) NOT NULL DEFAULT 'OPEN', created_by BIGINT NOT NULL,
+ create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(id),
+ KEY idx_exam_scope(tenant_id,academic_year_id,campus_id,grade,exam_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS school_score (
+ id BIGINT NOT NULL AUTO_INCREMENT, tenant_id VARCHAR(64) NOT NULL, exam_id BIGINT NOT NULL,
+ student_id BIGINT NOT NULL, enrollment_id BIGINT NOT NULL, class_id BIGINT NOT NULL, subject_id BIGINT NOT NULL,
+ score DECIMAL(6,2) DEFAULT NULL, absent TINYINT(1) NOT NULL DEFAULT 0, remark VARCHAR(255) DEFAULT NULL,
+ modified_by BIGINT NOT NULL, update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ PRIMARY KEY(id), UNIQUE KEY uk_score_exam_student_subject(tenant_id,exam_id,student_id,subject_id),
+ KEY idx_score_class_exam(tenant_id,class_id,exam_id),
+ CONSTRAINT fk_score_exam FOREIGN KEY(exam_id) REFERENCES school_exam(id),
+ CONSTRAINT fk_score_subject FOREIGN KEY(subject_id) REFERENCES school_subject(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Idempotent upgrade for installations whose student table predates tenant scoping.
 SET @ddl = (SELECT IF(COUNT(*)=0, 'ALTER TABLE student ADD COLUMN tenant_id VARCHAR(64) NOT NULL DEFAULT ''default'' AFTER id', 'SELECT 1') FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='student' AND column_name='tenant_id');
 PREPARE student_upgrade FROM @ddl; EXECUTE student_upgrade; DEALLOCATE PREPARE student_upgrade;

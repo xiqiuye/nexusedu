@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-11-03
+- 后端学生档案与 AI 学生查询从旧 `student/profile` 包迁入 `education/student/profile`，学校管理适配与持久化代码迁入 `education`；保持 `/api/school` 路由不变，并加入路由契约测试。班级、组织、教师、考评的应用服务拆分仍待后续分域重构。
+
 ## 2026-10-26
 - 修复后端 MyBatis 扫描范围过宽导致 `ModelAdapter` 被误注册为 Mapper、项目启动失败的问题。
 - Consolidated system_data_init.sql into data_init.sql, retained its legacy RBAC links, and fixed invalid role_id references in student role initialization.

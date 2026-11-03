@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xqy.nexusedu.education.infrastructure.persistence.mapper.StudentSchoolMapper">
+    <select id="findCampuses" resultType="map">
+        SELECT id,campus_code AS campusCode,name,address,status FROM school_campus
+        WHERE tenant_id=#{tenantId} ORDER BY name,id
+    </select>
+    <select id="findCampusesForAdmin" resultType="map">
+        SELECT c.id,c.campus_code AS campusCode,c.name,c.address,c.status
+        FROM school_campus c JOIN student_campus_admin a ON a.campus_id=c.id AND a.tenant_id=c.tenant_id
+        WHERE c.tenant_id=#{tenantId} AND a.user_id=#{userId} ORDER BY c.name,c.id
+    </select>
+    <select id="findCampusesForHomeroom" resultType="map">
+        SELECT DISTINCT c.id,c.campus_code AS campusCode,c.name,c.address,c.status
+        FROM school_campus c JOIN student_homeroom_assignment x
+          ON x.class_id IN (SELECT id FROM school_class WHERE campus_id=c.id AND tenant_id=c.tenant_id)
+         AND x.tenant_id=c.tenant_id
+        WHERE c.tenant_id=#{tenantId} AND x.user_id=#{userId} AND x.ends_on IS NULL ORDER BY c.name,c.id
+    </select>
+    <insert id="insertCampus">INSERT INTO school_campus(tenant_id,campus_code,name,address) VALUES(#{tenantId},#{campusCode},#{name},#{address})</insert>
+    <select id="findCampus" resultType="map">SELECT id,campus_code AS campusCode,name,address,status FROM school_campus WHERE tenant_id=#{tenantId} AND campus_code=#{campusCode}</select>
+
+    <select id="findAcademicYears" resultType="map">SELECT id,name,starts_on AS startsOn,ends_on AS endsOn,is_current AS current FROM school_academic_year WHERE tenant_id=#{tenantId} ORDER BY starts_on DESC</select>
+    <select id="countCurrentAcademicYear" resultType="int">SELECT COUNT(*) FROM school_academic_year WHERE tenant_id=#{tenantId} AND is_current=1</select>
+    <update id="clearCurrentAcademicYears">UPDATE school_academic_year SET is_current=0 WHERE tenant_id=#{tenantId}</update>
+    <insert id="insertAcademicYear">INSERT INTO school_academic_year(tenant_id,name,starts_on,ends_on,is_current) VALUES(#{tenantId},#{name},#{startsOn},#{endsOn},#{current})</insert>
+    <select id="findAcademicYear" resultType="map">SELECT id,name,starts_on AS startsOn,ends_on AS endsOn,is_current AS current FROM school_academic_year WHERE tenant_id=#{tenantId} AND name=#{name}</select>
+
+    <sql id="classColumns">c.id,c.campus_id AS campusId,p.name AS campusName,c.academic_year_id AS academicYearId,y.name AS academicYear,c.grade,c.class_name AS className,c.capacity,c.status,
+        (SELECT COUNT(DISTINCT e.student_id) FROM student_enrollment e WHERE e.tenant_id=c.tenant_id AND e.class_id=c.id AND e.status='ENROLLED' AND e.ends_on IS NULL) AS studentCount,
+        (SELECT GROUP_CONCAT(DISTINCT COALESCE(u.real_name,u.nickname,u.username) ORDER BY u.real_name SEPARATOR ', ') FROM student_homeroom_assignment h JOIN sys_user u ON u.id=h.user_id AND u.tenant_id=h.tenant_id WHERE h.tenant_id=c.tenant_id AND h.class_id=c.id AND h.ends_on IS NULL) AS homeroomTeacher,
+        (SELECT GROUP_CONCAT(DISTINCT COALESCE(u.real_name,u.nickname,u.username) ORDER BY u.real_name SEPARATOR ', ') FROM school_class_teacher ct JOIN school_teacher t ON t.id=ct.teacher_id AND t.tenant_id=ct.tenant_id JOIN sys_user u ON u.id=t.user_id AND u.tenant_id=t.tenant_id WHERE ct.tenant_id=c.tenant_id AND ct.class_id=c.id AND ct.ends_on IS NULL) AS teachers</sql>
+    <select id="findClasses" resultType="map">
+        SELECT <include refid="classColumns"/> FROM school_class c
+        JOIN school_campus p ON p.id=c.campus_id AND p.tenant_id=c.tenant_id
+        JOIN school_academic_year y ON y.id=c.academic_year_id AND y.tenant_id=c.tenant_id
+        WHERE c.tenant_id=#{tenantId} AND (#{yearId} IS NULL OR c.academic_year_id=#{yearId}) AND (#{campusId} IS NULL OR c.campus_id=#{campusId})
+        ORDER BY p.name,c.grade,c.class_name
+    </select>
+    <select id="findClassesForUser" resultType="map">
+        SELECT <include refid="classColumns"/> FROM school_class c
+        JOIN school_campus p ON p.id=c.campus_id AND p.tenant_id=c.tenant_id
+        JOIN school_academic_year y ON y.id=c.academic_year_id AND y.tenant_id=c.tenant_id
+        WHERE c.tenant_id=#{tenantId} AND (#{yearId} IS NULL OR c.academic_year_id=#{yearId}) AND (#{campusId} IS NULL OR c.campus_id=#{campusId})
+          AND (EXISTS(SELECT 1 FROM student_campus_admin a WHERE a.tenant_id=c.tenant_id AND a.campus_id=c.campus_id AND a.user_id=#{userId})
+            OR EXISTS(SELECT 1 FROM student_homeroom_assignment h WHERE h.tenant_id=c.tenant_id AND h.class_id=c.id AND h.user_id=#{userId} AND h.ends_on IS NULL)
+            OR EXISTS(SELECT 1 FROM student_school_class_scope t WHERE t.tenant_id=c.tenant_id AND t.class_id=c.id AND t.user_id=#{userId}))
+        ORDER BY p.name,c.grade,c.class_name
+    </select>
+    <select id="countAcademicYear" resultType="int">SELECT COUNT(*) FROM school_academic_year WHERE id=#{yearId} AND tenant_id=#{tenantId}</select>
+    <insert id="insertClass">INSERT INTO school_class(tenant_id,campus_id,academic_year_id,grade,class_name,capacity) VALUES(#{tenantId},#{campusId},#{academicYearId},#{grade},#{className},#{capacity})</insert>
+    <select id="findClass" resultType="map">SELECT id,campus_id AS campusId,academic_year_id AS academicYearId,grade,class_name AS className,capacity,status FROM school_class WHERE tenant_id=#{tenantId} AND campus_id=#{campusId} AND academic_year_id=#{academicYearId} AND grade=#{grade} AND class_name=#{className}</select>
+    <select id="findClassById" resultType="map">SELECT <include refid="classColumns"/> FROM school_class c JOIN school_campus p ON p.id=c.campus_id AND p.tenant_id=c.tenant_id JOIN school_academic_year y ON y.id=c.academic_year_id AND y.tenant_id=c.tenant_id WHERE c.tenant_id=#{tenantId} AND c.id=#{classId}</select>
+    <select id="findClassTeacherAssignments" resultType="map">SELECT ct.id AS assignmentId,ct.teacher_id AS teacherId,t.user_id AS userId,COALESCE(u.real_name,u.nickname,u.username) AS teacherName,t.employee_no AS employeeNo,ct.subject_id AS subjectId,s.name AS subjectName,ct.assignment_type AS type,ct.starts_on AS startsOn,ct.ends_on AS endsOn FROM school_class_teacher ct JOIN school_teacher t ON t.id=ct.teacher_id AND t.tenant_id=ct.tenant_id JOIN sys_user u ON u.id=t.user_id AND u.tenant_id=t.tenant_id LEFT JOIN school_subject s ON s.id=ct.subject_id AND s.tenant_id=ct.tenant_id WHERE ct.tenant_id=#{tenantId} AND ct.class_id=#{classId} ORDER BY ct.ends_on IS NULL DESC,ct.starts_on DESC,ct.id DESC</select>
+    <select id="findClassTeacherAssignment" resultType="map">SELECT ct.id AS assignmentId,ct.teacher_id AS teacherId,t.user_id AS userId,ct.subject_id AS subjectId,ct.assignment_type AS type FROM school_class_teacher ct JOIN school_teacher t ON t.id=ct.teacher_id AND t.tenant_id=ct.tenant_id WHERE ct.tenant_id=#{tenantId} AND ct.class_id=#{classId} AND ct.id=#{assignmentId} AND ct.ends_on IS NULL</select>
+    <update id="closeClassTeacherAssignment">UPDATE school_class_teacher SET ends_on=#{endsOn} WHERE tenant_id=#{tenantId} AND class_id=#{classId} AND id=#{assignmentId} AND ends_on IS NULL</update>
+    <select id="countOtherActiveClassTeacherAssignments" resultType="int">SELECT COUNT(*) FROM school_class_teacher WHERE tenant_id=#{tenantId} AND class_id=#{classId} AND teacher_id=#{teacherId} AND ends_on IS NULL</select>
+    <delete id="deleteClassScope">DELETE FROM student_school_class_scope WHERE tenant_id=#{tenantId} AND class_id=#{classId} AND user_id=#{userId}</delete>
+    <update id="updateClass">UPDATE school_class SET class_name=#{className},capacity=#{capacity} WHERE tenant_id=#{tenantId} AND id=#{classId}</update>
+    <update id="updateClassStatus">UPDATE school_class SET status=#{status} WHERE tenant_id=#{tenantId} AND id=#{classId}</update>
+    <select id="countEnrolledInClass" resultType="int">SELECT COUNT(DISTINCT student_id) FROM student_enrollment WHERE tenant_id=#{tenantId} AND class_id=#{classId} AND status='ENROLLED' AND ends_on IS NULL</select>
+
+    <select id="findTeachers" resultType="map">SELECT t.id AS teacherId,t.employee_no AS employeeNo,t.title,t.status,u.id AS userId,u.username,u.real_name AS realName,u.nickname,u.phone FROM school_teacher t JOIN sys_user u ON u.id=t.user_id AND u.tenant_id=t.tenant_id WHERE t.tenant_id=#{tenantId} AND t.status='ACTIVE' AND u.status='ENABLED' AND (#{search} IS NULL OR #{search}='' OR u.username LIKE CONCAT('%',#{search},'%') OR u.real_name LIKE CONCAT('%',#{search},'%') OR u.nickname LIKE CONCAT('%',#{search},'%') OR t.employee_no LIKE CONCAT('%',#{search},'%')) ORDER BY COALESCE(u.real_name,u.nickname,u.username) LIMIT 30</select>
+    <select id="findTeacherCandidates" resultType="map">SELECT u.id AS userId,u.username,u.real_name AS realName,u.nickname,u.phone,t.id AS teacherId,t.employee_no AS employeeNo,t.title FROM sys_user u LEFT JOIN school_teacher t ON t.tenant_id=u.tenant_id AND t.user_id=u.id AND t.status='ACTIVE' WHERE u.tenant_id=#{tenantId} AND u.status='ENABLED' AND u.user_type&lt;&gt;'SYSTEM' AND (#{search} IS NULL OR #{search}='' OR u.username LIKE CONCAT('%',#{search},'%') OR u.real_name LIKE CONCAT('%',#{search},'%') OR u.nickname LIKE CONCAT('%',#{search},'%') OR t.employee_no LIKE CONCAT('%',#{search},'%')) ORDER BY COALESCE(u.real_name,u.nickname,u.username) LIMIT 30</select>
+    <insert id="insertTeacher">INSERT INTO school_teacher(tenant_id,user_id,employee_no,title) VALUES(#{tenantId},#{userId},#{employeeNo},#{title})</insert>
+    <select id="findTeacher" resultType="map">SELECT id AS teacherId,user_id AS userId,employee_no AS employeeNo,title,status FROM school_teacher WHERE tenant_id=#{tenantId} AND user_id=#{userId}</select>
+    <select id="findSubjects" resultType="map">SELECT id,subject_code AS subjectCode,name,grade_min AS gradeMin,grade_max AS gradeMax,status FROM school_subject WHERE tenant_id=#{tenantId} AND status='ACTIVE' AND (#{grade} IS NULL OR (grade_min&lt;=#{grade} AND grade_max&gt;=#{grade})) ORDER BY name</select>
+    <insert id="insertSubject">INSERT INTO school_subject(tenant_id,subject_code,name,grade_min,grade_max) VALUES(#{tenantId},#{code},#{name},#{gradeMin},#{gradeMax})</insert>
+    <select id="countSubject" resultType="int">SELECT COUNT(*) FROM school_subject WHERE tenant_id=#{tenantId} AND id=#{subjectId} AND status='ACTIVE' AND grade_min&lt;=#{grade} AND grade_max&gt;=#{grade}</select>
+    <update id="closeClassTeachers">UPDATE school_class_teacher SET ends_on=#{endsOn} WHERE tenant_id=#{tenantId} AND class_id=#{classId} AND ends_on IS NULL <if test="teacherId != null">AND teacher_id=#{teacherId}</if> <if test="subjectId != null">AND subject_id=#{subjectId}</if> <if test="type != null">AND assignment_type=#{type}</if></update>
+    <insert id="insertClassTeacher">INSERT INTO school_class_teacher(tenant_id,class_id,teacher_id,subject_id,assignment_type,starts_on) VALUES(#{tenantId},#{classId},#{teacherId},#{subjectId},#{type},#{startsOn})</insert>
+    <select id="findPromotionStudents" resultType="map">SELECT e.id AS enrollmentId,e.student_id AS studentId,s.student_no AS studentNo,s.name,e.grade,e.class_id AS classId,c.class_name AS className FROM student_enrollment e JOIN student s ON s.id=e.student_id AND s.tenant_id=e.tenant_id LEFT JOIN school_class c ON c.id=e.class_id AND c.tenant_id=e.tenant_id WHERE e.tenant_id=#{tenantId} AND e.campus_id=#{campusId} AND e.academic_year_id=#{yearId} AND e.grade=#{grade} AND e.status='ENROLLED' AND NOT EXISTS(SELECT 1 FROM student_enrollment e2 WHERE e2.tenant_id=e.tenant_id AND e2.student_id=e.student_id AND e2.academic_year_id=e.academic_year_id AND (e2.starts_on&gt;e.starts_on OR (e2.starts_on=e.starts_on AND e2.id&gt;e.id))) ORDER BY c.class_name,s.student_no</select>
+    <insert id="insertPromotionBatch">INSERT INTO school_promotion_batch(tenant_id,campus_id,source_year_id,target_year_id,source_grade,created_by) VALUES(#{tenantId},#{campusId},#{sourceYearId},#{targetYearId},#{grade},#{createdBy})</insert>
+    <select id="lastInsertId" resultType="long">SELECT LAST_INSERT_ID()</select>
+    <update id="updateEnrollmentEnd">UPDATE student_enrollment SET ends_on=#{endsOn} WHERE tenant_id=#{tenantId} AND id=#{enrollmentId} AND ends_on IS NULL</update>
+    <insert id="insertPromotionEnrollment">INSERT INTO student_enrollment(tenant_id,student_id,academic_year_id,campus_id,grade,class_id,status,starts_on,change_reason,changed_by) VALUES(#{tenantId},#{studentId},#{yearId},#{campusId},#{grade},#{classId},#{status},#{startsOn},'学年升班',#{changedBy})</insert>
+    <select id="findEnrollmentIdForYear" resultType="long">SELECT id FROM student_enrollment WHERE tenant_id=#{tenantId} AND student_id=#{studentId} AND academic_year_id=#{yearId} ORDER BY starts_on DESC,id DESC LIMIT 1</select>
+    <insert id="insertPromotionItem">INSERT INTO school_promotion_item(tenant_id,batch_id,student_id,source_enrollment_id,target_enrollment_id,action,target_grade,target_class_id,reason) VALUES(#{tenantId},#{batchId},#{studentId},#{sourceEnrollmentId},#{targetEnrollmentId},#{action},#{targetGrade},#{targetClassId},#{reason})</insert>
+    <select id="findPromotionBatch" resultType="map">SELECT b.id,b.campus_id AS campusId,p.name AS campusName,b.source_year_id AS sourceAcademicYearId,sy.name AS sourceAcademicYear,b.target_year_id AS targetAcademicYearId,ty.name AS targetAcademicYear,b.source_grade AS sourceGrade,b.status,b.created_by AS createdBy,b.confirmed_at AS confirmedAt FROM school_promotion_batch b JOIN school_campus p ON p.id=b.campus_id AND p.tenant_id=b.tenant_id JOIN school_academic_year sy ON sy.id=b.source_year_id AND sy.tenant_id=b.tenant_id JOIN school_academic_year ty ON ty.id=b.target_year_id AND ty.tenant_id=b.tenant_id WHERE b.tenant_id=#{tenantId} AND b.id=#{batchId}</select>
+    <select id="findPromotionItems" resultType="map">SELECT i.id,i.student_id AS studentId,s.student_no AS studentNo,s.name AS studentName,i.action,i.target_grade AS targetGrade,c.class_name AS targetClass,i.reason,i.source_enrollment_id AS sourceEnrollmentId,i.target_enrollment_id AS targetEnrollmentId FROM school_promotion_item i JOIN student s ON s.id=i.student_id AND s.tenant_id=i.tenant_id LEFT JOIN school_class c ON c.id=i.target_class_id AND c.tenant_id=i.tenant_id WHERE i.tenant_id=#{tenantId} AND i.batch_id=#{batchId} ORDER BY s.student_no</select>
+    <select id="countTargetEnrollment" resultType="int">SELECT COUNT(*) FROM student_enrollment WHERE tenant_id=#{tenantId} AND student_id=#{studentId} AND academic_year_id=#{yearId}</select>
+    <select id="findExams" resultType="map">SELECT e.id,e.academic_year_id AS academicYearId,y.name AS academicYear,e.campus_id AS campusId,p.name AS campusName,e.grade,e.name,e.term,e.exam_date AS examDate,e.status FROM school_exam e JOIN school_academic_year y ON y.id=e.academic_year_id AND y.tenant_id=e.tenant_id JOIN school_campus p ON p.id=e.campus_id AND p.tenant_id=e.tenant_id WHERE e.tenant_id=#{tenantId} AND (#{yearId} IS NULL OR e.academic_year_id=#{yearId}) AND (#{campusId} IS NULL OR e.campus_id=#{campusId}) AND (#{grade} IS NULL OR e.grade=#{grade}) ORDER BY e.exam_date DESC,e.id DESC</select>
+    <insert id="insertExam">INSERT INTO school_exam(tenant_id,academic_year_id,campus_id,grade,name,term,exam_date,created_by) VALUES(#{tenantId},#{yearId},#{campusId},#{grade},#{name},#{term},#{date},#{createdBy})</insert>
+    <select id="findExam" resultType="map">SELECT id,academic_year_id AS academicYearId,campus_id AS campusId,grade,name,term,exam_date AS examDate,status FROM school_exam WHERE tenant_id=#{tenantId} AND id=#{examId}</select>
+    <select id="findActiveEnrollment" resultType="map">SELECT id AS enrollmentId,class_id AS classId,campus_id AS campusId,grade,status FROM student_enrollment WHERE tenant_id=#{tenantId} AND student_id=#{studentId} AND academic_year_id=#{yearId} AND (#{classId} IS NULL OR class_id=#{classId}) AND status='ENROLLED' ORDER BY starts_on DESC,id DESC LIMIT 1</select>
+    <insert id="upsertScore">INSERT INTO school_score(tenant_id,exam_id,student_id,enrollment_id,class_id,subject_id,score,absent,remark,modified_by) VALUES(#{tenantId},#{examId},#{studentId},#{enrollmentId},#{classId},#{subjectId},#{score},#{absent},#{remark},#{modifiedBy}) ON DUPLICATE KEY UPDATE enrollment_id=VALUES(enrollment_id),class_id=VALUES(class_id),score=VALUES(score),absent=VALUES(absent),remark=VALUES(remark),modified_by=VALUES(modified_by)</insert>
+    <select id="findScores" resultType="map">SELECT sc.id,sc.exam_id AS examId,sc.student_id AS studentId,s.student_no AS studentNo,s.name AS studentName,sc.enrollment_id AS enrollmentId,sc.class_id AS classId,c.class_name AS className,sc.subject_id AS subjectId,su.name AS subjectName,sc.score,sc.absent,sc.remark FROM school_score sc JOIN student s ON s.id=sc.student_id AND s.tenant_id=sc.tenant_id JOIN school_class c ON c.id=sc.class_id AND c.tenant_id=sc.tenant_id JOIN school_subject su ON su.id=sc.subject_id AND su.tenant_id=sc.tenant_id WHERE sc.tenant_id=#{tenantId} AND sc.exam_id=#{examId} AND (#{classId} IS NULL OR sc.class_id=#{classId}) ORDER BY c.class_name,s.student_no,su.name</select>
+
+    <sql id="studentWhere">
+        s.tenant_id=#{tenantId}
+        <if test="!schoolAdmin">
+            <choose>
+                <when test="campusAdmin">AND EXISTS(SELECT 1 FROM student_campus_admin ca WHERE ca.tenant_id=s.tenant_id AND ca.user_id=#{userId} AND ca.campus_id=e.campus_id)</when>
+                <otherwise>AND (EXISTS(SELECT 1 FROM student_homeroom_assignment ha WHERE ha.tenant_id=s.tenant_id AND ha.user_id=#{userId} AND ha.class_id=e.class_id AND ha.ends_on IS NULL) OR EXISTS(SELECT 1 FROM student_school_class_scope ts WHERE ts.tenant_id=s.tenant_id AND ts.user_id=#{userId} AND ts.class_id=e.class_id))</otherwise>
+            </choose>
+        </if>
+        <if test="useCurrentYear">AND e.academic_year_id=(SELECT id FROM school_academic_year WHERE tenant_id=#{tenantId} AND is_current=1 LIMIT 1)</if>
+        AND NOT EXISTS(SELECT 1 FROM student_enrollment en2 WHERE en2.tenant_id=e.tenant_id AND en2.student_id=e.student_id AND en2.academic_year_id=e.academic_year_id AND (en2.starts_on&gt;e.starts_on OR (en2.starts_on=e.starts_on AND en2.id&gt;e.id)))
+        <if test="campusId != null">AND e.campus_id=#{campusId}</if>
+        <if test="academicYearId != null">AND e.academic_year_id=#{academicYearId}</if>
+        <if test="grade != null">AND e.grade=#{grade}</if>
+        <if test="classId != null">AND e.class_id=#{classId}</if>
+        <if test="status != null and status != ''">AND e.status=#{status}</if>
+        <if test="search != null and search != ''">AND (s.student_no LIKE CONCAT('%',#{search},'%') OR s.name LIKE CONCAT('%',#{search},'%'))</if>
+    </sql>
+    <sql id="studentFrom">FROM student s LEFT JOIN student_enrollment e ON e.student_id=s.id AND e.tenant_id=s.tenant_id LEFT JOIN school_campus p ON p.id=e.campus_id AND p.tenant_id=e.tenant_id LEFT JOIN school_class c ON c.id=e.class_id AND c.tenant_id=e.tenant_id LEFT JOIN school_academic_year y ON y.id=e.academic_year_id AND y.tenant_id=e.tenant_id</sql>
+    <select id="countStudents" resultType="long">SELECT COUNT(DISTINCT s.id) <include refid="studentFrom"/> WHERE <include refid="studentWhere"/></select>
+    <select id="findStudents" resultType="map">
+        SELECT s.id,s.student_no AS studentNo,s.name,s.gender,s.birthday,s.email,s.phone,e.id AS enrollmentId,e.academic_year_id AS academicYearId,y.name AS academicYear,e.campus_id AS campusId,p.name AS campusName,e.grade,e.class_id AS classId,c.class_name AS className,e.status,e.starts_on AS enrolledOn,e.ends_on AS leftOn
+        <include refid="studentFrom"/> WHERE <include refid="studentWhere"/>
+        GROUP BY s.id,e.id ORDER BY ${sortColumn} ${sortDirection},s.id LIMIT #{limit} OFFSET #{offset}
+    </select>
+    <select id="countActiveClass" resultType="int">SELECT COUNT(*) FROM school_class WHERE id=#{classId} AND tenant_id=#{tenantId} AND campus_id=#{campusId} AND academic_year_id=#{academicYearId} AND grade=#{grade} AND status='ACTIVE'</select>
+    <select id="countStudentNo" resultType="int">SELECT COUNT(*) FROM student WHERE tenant_id=#{tenantId} AND student_no=#{studentNo}</select>
+    <insert id="insertStudent">INSERT INTO student(tenant_id,student_no,name,gender,birthday,email,phone) VALUES(#{tenantId},#{studentNo},#{name},#{gender},#{birthday},#{email},#{phone})</insert>
+    <select id="findStudentId" resultType="long">SELECT id FROM student WHERE tenant_id=#{tenantId} AND student_no=#{studentNo}</select>
+    <select id="findStudent" resultType="map">SELECT id,student_no AS studentNo,name,gender,birthday,email,phone FROM student WHERE id=#{studentId} AND tenant_id=#{tenantId}</select>
+    <insert id="insertEnrollment">INSERT INTO student_enrollment(tenant_id,student_id,academic_year_id,campus_id,grade,class_id,status,starts_on,ends_on,change_reason,changed_by) VALUES(#{tenantId},#{studentId},#{academicYearId},#{campusId},#{grade},#{classId},#{status},#{startsOn},#{endsOn},#{reason},#{changedBy})</insert>
+
+    <select id="findCampusIdByName" resultType="long">SELECT id FROM school_campus WHERE tenant_id=#{tenantId} AND name=#{name}</select>
+    <select id="findAcademicYearIdByName" resultType="long">SELECT id FROM school_academic_year WHERE tenant_id=#{tenantId} AND name=#{name}</select>
+    <select id="findClassId" resultType="long">SELECT id FROM school_class WHERE tenant_id=#{tenantId} AND campus_id=#{campusId} AND academic_year_id=#{academicYearId} AND grade=#{grade} AND class_name=#{className}</select>
+    <select id="findEnrollmentForMove" resultType="map">SELECT campus_id AS campusId,academic_year_id AS yearId,grade,class_id AS classId FROM student_enrollment WHERE id=#{enrollmentId} AND tenant_id=#{tenantId} AND student_id=#{studentId} AND status='ENROLLED'</select>
+    <select id="countTargetClass" resultType="int">SELECT COUNT(*) FROM school_class WHERE id=#{classId} AND tenant_id=#{tenantId} AND campus_id=#{campusId} AND academic_year_id=#{academicYearId} AND grade=#{grade} AND status='ACTIVE'</select>
+    <update id="updateEnrollmentTransfer">UPDATE student_enrollment SET status='TRANSFERRED',ends_on=#{endsOn},change_reason=#{reason},changed_by=#{changedBy} WHERE id=#{enrollmentId} AND tenant_id=#{tenantId}</update>
+    <insert id="insertEnrollmentTransfer">INSERT INTO student_enrollment(tenant_id,student_id,academic_year_id,campus_id,grade,class_id,status,starts_on,change_reason,changed_by) VALUES(#{tenantId},#{studentId},#{academicYearId},#{campusId},#{grade},#{classId},'ENROLLED',#{startsOn},#{reason},#{changedBy})</insert>
+    <select id="findEnrollmentForStatus" resultType="map">SELECT academic_year_id AS yearId,campus_id AS campusId,grade,class_id AS classId,status,starts_on AS startsOn FROM student_enrollment WHERE id=#{enrollmentId} AND tenant_id=#{tenantId} AND student_id=#{studentId}</select>
+    <update id="updateEnrollmentStatus">UPDATE student_enrollment SET ends_on=#{endsOn},change_reason=#{reason},changed_by=#{changedBy} WHERE id=#{enrollmentId} AND tenant_id=#{tenantId}</update>
+    <insert id="insertEnrollmentStatus">INSERT INTO student_enrollment(tenant_id,student_id,academic_year_id,campus_id,grade,class_id,status,starts_on,change_reason,changed_by) VALUES(#{tenantId},#{studentId},#{academicYearId},#{campusId},#{grade},#{classId},#{status},#{startsOn},#{reason},#{changedBy})</insert>
+
+    <select id="findClassCampusId" resultType="long">SELECT campus_id FROM school_class WHERE id=#{classId} AND tenant_id=#{tenantId}</select>
+    <update id="closeHomeroom">UPDATE student_homeroom_assignment SET ends_on=#{endsOn} WHERE tenant_id=#{tenantId} AND class_id=#{classId} AND ends_on IS NULL</update>
+    <insert id="insertHomeroom">INSERT INTO student_homeroom_assignment(tenant_id,class_id,user_id,starts_on) VALUES(#{tenantId},#{classId},#{userId},#{startsOn})</insert>
+    <insert id="insertCampusAdmin">INSERT IGNORE INTO student_campus_admin(tenant_id,campus_id,user_id) VALUES(#{tenantId},#{campusId},#{userId})</insert>
+    <insert id="insertClassScope">INSERT IGNORE INTO student_school_class_scope(tenant_id,class_id,user_id) VALUES(#{tenantId},#{classId},#{userId})</insert>
+    <select id="countActiveCampus" resultType="int">SELECT COUNT(*) FROM school_campus WHERE tenant_id=#{tenantId} AND id=#{campusId} AND status='ACTIVE'</select>
+    <select id="countCampusAdmin" resultType="int">SELECT COUNT(*) FROM student_campus_admin WHERE tenant_id=#{tenantId} AND campus_id=#{campusId} AND user_id=#{userId}</select>
+    <select id="countTenantUser" resultType="int">SELECT COUNT(*) FROM sys_user WHERE id=#{userId} AND tenant_id=#{tenantId} AND status='ENABLED'</select>
+    <insert id="insertUserRole">
+        INSERT IGNORE INTO sys_user_role(id,user_id,role_id,create_by,modify_by)
+        SELECT (SELECT COALESCE(MAX(id),0)+1 FROM sys_user_role),#{userId},id,'student-management','student-management'
+        FROM sys_role WHERE role_code=#{roleCode} AND status='ENABLED'
+    </insert>
+</mapper>
