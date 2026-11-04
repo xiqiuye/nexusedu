@@ -779,6 +779,7 @@ FROM sys_user u
                      SELECT 'ART', '美术', 1, 6
                      UNION ALL
                      SELECT 'MUSIC', '音乐', 1, 6) s
+WHERE TRUE
     ON DUPLICATE KEY
 UPDATE name =
 VALUES (name), grade_min=

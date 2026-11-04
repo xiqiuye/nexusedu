@@ -1,6 +1,7 @@
 # Changelog
 
 ## 2026-11-04
+- 修复科目初始化 SQL 中 `CROSS JOIN` 后直接接 `ON DUPLICATE KEY UPDATE` 的解析歧义，添加 `WHERE TRUE`；通过 MySQL 临时表复现原错误并验证多租户初始化、重复执行和更新行为。
 - 修复 Docker 前端构建使用 pnpm 9.15.5 安装依赖时因工作区缺少 `packages` 字段而失败的问题，显式声明当前前端目录为工作区包。
 
 ## 2026-11-03
