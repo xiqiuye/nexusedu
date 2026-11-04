@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-11-04
+- 修复 Docker 前端构建使用 pnpm 9.15.5 安装依赖时因工作区缺少 `packages` 字段而失败的问题，显式声明当前前端目录为工作区包。
+
 ## 2026-11-03
 - 后端学生档案与 AI 学生查询从旧 `student/profile` 包迁入 `education/student/profile`，学校管理适配与持久化代码迁入 `education`；保持 `/api/school` 路由不变，并加入路由契约测试。班级、组织、教师、考评的应用服务拆分仍待后续分域重构。
 
