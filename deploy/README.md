@@ -16,7 +16,7 @@ deploy/
 └── README.md
 ```
 
-Compose 直接挂载仓库已有的初始化脚本：`backend/doc/sql/table_init.sql`、`system_data_init.sql`、`data_init.sql` 和 `postgres_knowledge_chunk.sql`。这些脚本只会在对应数据库卷第一次创建时执行。
+Compose 直接挂载仓库已有的初始化脚本：`backend/doc/sql/table_init.sql`、`data_init.sql` 和 `postgres_knowledge_chunk.sql`。这些脚本只会在对应数据库卷第一次创建时执行。
 
 ## Windows 本地开发
 
@@ -60,7 +60,33 @@ chmod +x deploy/deploy.sh
 ./deploy/deploy.sh deploy
 ```
 
-开放防火墙时只暴露 `HTTP_PORT`（默认 80）；MySQL、PostgreSQL 和 Redis 没有发布到宿主机端口，只在 Compose 内网通信。生产环境建议在宿主机或云负载均衡器上配置 HTTPS，再把 80 重定向到 443。
+开放防火墙时只暴露 `HTTP_PORT`（默认 80）；MySQL、PostgreSQL 和 Redis 端口仅绑定宿主机 `127.0.0.1`，本地客户端通过 SSH 隧道连接。生产环境建议在宿主机或云负载均衡器上配置 HTTPS，再把 80 重定向到 443。
+
+## 从本地连接服务器数据库
+
+更新配置后，在服务器项目根目录执行以下命令应用端口映射，无需重建镜像。容器重建时会短暂中断数据库连接，保留已有数据卷。
+
+```bash
+docker compose --env-file deploy/.env --env-file deploy/.deploy.env -f deploy/docker-compose.yml up -d mysql postgres redis
+```
+
+默认服务器回环端口为 MySQL `3306`、PostgreSQL `5432`、Redis `6379`。若端口已被占用，在服务器 `deploy/.env` 中设置 `MYSQL_PORT`、`POSTGRES_PORT`、`REDIS_PORT`，再执行上述命令。容器内服务端口不受这些映射影响。
+
+在本地电脑终端执行（替换服务器 IP 和 SSH 用户）：
+
+```bash
+ssh -N -o ExitOnForwardFailure=yes -L 127.0.0.1:13306:127.0.0.1:3306 -L 127.0.0.1:15432:127.0.0.1:5432 -L 127.0.0.1:16379:127.0.0.1:6379 root@服务器IP
+```
+
+保持终端打开，无输出通常表示隧道已建立。自定义 SSH 端口可添加 `-p 端口号`；若修改了服务器映射端口，也需同步修改各 `-L` 参数最后的端口。本地使用不同端口，避免与本机数据库冲突。
+
+| 服务 | 本地客户端地址 | 数据库/用户 | 密码 |
+| --- | --- | --- | --- |
+| MySQL | `127.0.0.1:13306` | `nexus-edu` / `root` | `MYSQL_ROOT_PASSWORD` |
+| PostgreSQL | `127.0.0.1:15432` | `nexus_edu_knowledge` / `POSTGRES_USER`（默认 `nexusedu`） | `POSTGRES_PASSWORD` |
+| Redis | `127.0.0.1:16379` | 默认数据库 `0` / 默认用户 | `REDIS_PASSWORD` |
+
+客户端选择普通 TCP 连接即可，SSH 已由上述命令建立。也可以使用客户端自带的 SSH 隧道，此时数据库地址填写服务器的 `127.0.0.1` 和对应服务器映射端口。数据库密码使用服务器实际配置；已有数据库的密码不会因修改 `.env` 自动改变。
 
 ## 环境变量
 
@@ -118,7 +144,7 @@ docker compose --env-file deploy/.env --env-file deploy/.deploy.env -f deploy/do
 ## 安全基线
 
 1. `.env` 权限设为 `600`，密钥通过密码管理器或服务器 Secret 机制分发。
-2. 不发布数据库和 Redis 端口，不使用默认密码，不在日志中打印密钥。
+2. 数据库和 Redis 端口仅绑定服务器回环地址，通过 SSH 隧道访问，不使用默认密码，不在日志中打印密钥。
 3. 首次登录后立即修改初始化账号 `Admin / 123456` 的密码；该账号来自仓库的开发种子数据。
 4. 生产使用 HTTPS、限制 SSH 来源、启用自动安全更新，并定期验证备份恢复。
 5. 镜像构建使用非 root 用户运行后端；Compose 使用固定的大版本镜像标签，升级前先在预发布环境验证。
