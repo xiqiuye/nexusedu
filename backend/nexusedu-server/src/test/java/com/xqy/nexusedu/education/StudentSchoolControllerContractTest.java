@@ -1,9 +1,10 @@
-package com.xqy.nexusedu.education.application.controller;
+package com.xqy.nexusedu.education;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.lang.reflect.Method;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -12,21 +13,30 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import com.xqy.nexusedu.education.application.controller.StudentSchoolController;
+import com.xqy.nexusedu.education.assessment.controller.AssessmentController;
+import com.xqy.nexusedu.education.enrollment.controller.EnrollmentController;
+import com.xqy.nexusedu.education.organization.controller.OrganizationController;
+import com.xqy.nexusedu.education.student.profile.controller.StudentProfileController;
+import com.xqy.nexusedu.education.teacher.controller.TeacherController;
 
 class StudentSchoolControllerContractTest {
     @Test
     void keepsSchoolApiRoutesStable() {
         Set<String> routes = new LinkedHashSet<>();
-        for (Method method : StudentSchoolController.class.getDeclaredMethods()) {
-            add(routes, "GET", method, GetMapping.class);
-            add(routes, "POST", method, PostMapping.class);
-            add(routes, "PUT", method, PutMapping.class);
-            add(routes, "DELETE", method, DeleteMapping.class);
+        for (Class<?> controller : List.of(OrganizationController.class, TeacherController.class,
+                EnrollmentController.class, AssessmentController.class, StudentProfileController.class)) {
+            String basePath = AnnotatedElementUtils.findMergedAnnotation(controller, RequestMapping.class).value()[0];
+            for (Method method : controller.getDeclaredMethods()) {
+                add(routes, basePath, "GET", method, GetMapping.class);
+                add(routes, basePath, "POST", method, PostMapping.class);
+                add(routes, basePath, "PUT", method, PutMapping.class);
+                add(routes, basePath, "DELETE", method, DeleteMapping.class);
+            }
         }
 
         assertEquals(Set.of(
                 "GET /api/school/campuses", "POST /api/school/campuses",
+                "PUT /api/school/campuses/{campusId}", "DELETE /api/school/campuses/{campusId}",
                 "GET /api/school/academic-years", "POST /api/school/academic-years",
                 "GET /api/school/classes", "POST /api/school/classes",
                 "GET /api/school/classes/{classId}", "PUT /api/school/classes/{classId}",
@@ -43,7 +53,7 @@ class StudentSchoolControllerContractTest {
         ), routes);
     }
 
-    private static <A extends java.lang.annotation.Annotation> void add(Set<String> routes, String verb,
+    private static <A extends java.lang.annotation.Annotation> void add(Set<String> routes, String basePath, String verb,
                                                                          Method method, Class<A> mappingType) {
         A mapping = AnnotatedElementUtils.findMergedAnnotation(method, mappingType);
         if (mapping == null) return;
@@ -53,7 +63,7 @@ class StudentSchoolControllerContractTest {
         else if (mapping instanceof PutMapping put) paths = put.value().length == 0 ? put.path() : put.value();
         else if (mapping instanceof DeleteMapping delete) paths = delete.value().length == 0 ? delete.path() : delete.value();
         else throw new IllegalStateException("Unsupported mapping annotation");
-        String basePath = AnnotatedElementUtils.findMergedAnnotation(StudentSchoolController.class, RequestMapping.class).value()[0];
+        if (paths.length == 0) paths = new String[]{""};
         for (String path : paths) routes.add(verb + " " + basePath + path);
     }
 }

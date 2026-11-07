@@ -709,23 +709,26 @@ UPDATE role_name=
 VALUES (role_name), description=
 VALUES (description), status='ENABLED';
 
-INSERT INTO sys_menu(id, parent_id, path, route_name, component, title, icon, sort_no, keep_alive, visible, hide_tab,
-                     full_page, iframe_flag, status, create_by, modify_by)
-VALUES (1700, NULL, '/student', 'StudentManagement', '/index/index', '学生管理', 'ri:graduation-cap-line', 80, 0, 1, 0,
-        0, 0, 'ENABLED', 'migration', 'migration'),
-       (1701, 1700, 'roster', 'StudentRoster', '/student', '学生档案', 'ri:contacts-line', 10, 0, 1, 0, 0, 0, 'ENABLED',
-        'migration', 'migration'),
-       (1710, 1700, 'classes', 'ClassManagement', '/school/classes', '班级管理', 'ri:group-line', 20, 0, 1, 0, 0, 0,
-        'ENABLED', 'migration', 'migration'),
-       (1711, 1700, 'teachers', 'TeacherManagement', '/school/teachers', '教师管理', 'ri:user-star-line', 30, 0, 1, 0,
-        0, 0, 'ENABLED', 'migration', 'migration'),
-       (1712, 1700, 'promotion', 'AcademicPromotion', '/school/promotion', '学年升班', 'ri:arrow-up-circle-line', 40, 0,
-        1, 0, 0, 0, 'ENABLED', 'migration', 'migration'),
-       (1713, 1700, 'grades', 'GradeManagement', '/school/grades', '考试成绩', 'ri:bar-chart-box-line', 50, 0, 1, 0, 0,
-        0, 'ENABLED', 'migration', 'migration') ON DUPLICATE KEY
-UPDATE title=
-VALUES (title), component=
-VALUES (component), status='ENABLED';
+INSERT INTO sys_menu(id, parent_id, path, route_name, component, redirect, title, icon, sort_no, keep_alive, visible, hide_tab, full_page, external_link, iframe_flag, active_path, status, create_by, modify_by)
+VALUES (1700, NULL, '/student', 'StudentManagement', '/index/index', NULL, '学生管理', 'ri:graduation-cap-line', 80, 0, 1, 0, 0, NULL, 0, NULL, 'ENABLED', 'migration', 'migration'),
+       (1701, 1700, 'roster', 'StudentRoster', '/student', NULL, '学生档案', 'ri:contacts-line', 10, 0, 1, 0, 0, NULL, 0, NULL, 'ENABLED', 'migration', 'migration'),
+       (1720, NULL, '/organization', 'TeachingOrganization', '/index/index', NULL, '教学组织', 'ri:building-2-line', 90, 0, 1, 0, 0, NULL, 0, NULL, 'ENABLED', 'migration', 'migration'),
+       (1721, 1720, 'campuses', 'CampusManagement', '/school/campuses', NULL, '校区管理', 'ri:map-pin-line', 10, 0, 1, 0, 0, NULL, 0, NULL, 'ENABLED', 'migration', 'migration'),
+       (1722, 1720, 'academic-years', 'AcademicYearManagement', '/school/academic-years', NULL, '学年管理', 'ri:calendar-2-line', 20, 0, 1, 0, 0, NULL, 0, NULL, 'ENABLED', 'migration', 'migration'),
+       (1710, 1720, 'classes', 'ClassManagement', '/school/classes', NULL, '班级管理', 'ri:group-line', 30, 0, 1, 0, 0, NULL, 0, NULL, 'ENABLED', 'migration', 'migration'),
+       (1723, 1720, 'assignments', 'TeachingAssignments', '/school/assignments', NULL, '班主任/任课关系', 'ri:user-settings-line', 40, 0, 1, 0, 0, NULL, 0, NULL, 'ENABLED', 'migration', 'migration'),
+       (1712, 1720, 'promotion', 'AcademicPromotion', '/school/promotion', NULL, '学年升班', 'ri:arrow-up-circle-line', 50, 0, 1, 0, 0, NULL, 0, NULL, 'ENABLED', 'migration', 'migration'),
+       (1730, NULL, '/teachers', 'TeacherManagement', '/index/index', NULL, '教师管理', 'ri:user-star-line', 100, 0, 1, 0, 0, NULL, 0, NULL, 'ENABLED', 'migration', 'migration'),
+       (1711, 1730, 'profiles', 'TeacherProfiles', '/school/teachers', NULL, '教师档案', 'ri:contacts-line', 10, 0, 1, 0, 0, NULL, 0, NULL, 'ENABLED', 'migration', 'migration'),
+       (1731, 1720, 'subjects', 'SubjectManagement', '/school/subjects', NULL, '学科管理', 'ri:book-2-line', 60, 0, 1, 0, 0, NULL, 0, NULL, 'ENABLED', 'migration', 'migration'),
+       (1740, NULL, '/assessment', 'AssessmentManagement', '/index/index', NULL, '成绩管理', 'ri:bar-chart-box-line', 110, 0, 1, 0, 0, NULL, 0, NULL, 'ENABLED', 'migration', 'migration'),
+       (1741, 1740, 'exams', 'ExamManagement', '/school/exams', NULL, '考试管理', 'ri:file-list-3-line', 10, 0, 1, 0, 0, NULL, 0, NULL, 'ENABLED', 'migration', 'migration'),
+       (1742, 1740, 'scores', 'ScoreEntry', '/school/grades', NULL, '成绩录入', 'ri:edit-box-line', 20, 0, 1, 0, 0, NULL, 0, NULL, 'ENABLED', 'migration', 'migration')
+ON DUPLICATE KEY UPDATE parent_id=VALUES(parent_id), path=VALUES(path), route_name=VALUES(route_name), component=VALUES(component), redirect=VALUES(redirect), title=VALUES(title), icon=VALUES(icon), sort_no=VALUES(sort_no), keep_alive=VALUES(keep_alive), visible=VALUES(visible), hide_tab=VALUES(hide_tab), full_page=VALUES(full_page), external_link=VALUES(external_link), iframe_flag=VALUES(iframe_flag), active_path=VALUES(active_path), status='ENABLED';
+
+-- Retire the former "考试成绩" child under 学生管理; it was replaced by the two assessment routes above.
+DELETE FROM sys_role_menu WHERE menu_id=1713;
+UPDATE sys_menu SET status='DISABLED', visible=0 WHERE id=1713;
 
 INSERT INTO sys_role_menu(id, role_id, menu_id, create_by, modify_by)
 -- Keep role and menu IDs in separate decimal ranges so generated primary keys cannot overlap.
@@ -735,13 +738,29 @@ FROM sys_role r
                      UNION ALL
                      SELECT 1701
                      UNION ALL
+                     SELECT 1720
+                     UNION ALL
+                     SELECT 1721
+                     UNION ALL
+                     SELECT 1722
+                     UNION ALL
                      SELECT 1710
                      UNION ALL
-                     SELECT 1711
+                     SELECT 1723
                      UNION ALL
                      SELECT 1712
                      UNION ALL
-                     SELECT 1713) m
+                     SELECT 1730
+                     UNION ALL
+                     SELECT 1711
+                     UNION ALL
+                     SELECT 1731
+                     UNION ALL
+                     SELECT 1740
+                     UNION ALL
+                     SELECT 1741
+                     UNION ALL
+                     SELECT 1742) m
 WHERE r.role_code IN ('R_SUPER', 'R_SCHOOL_ADMIN', 'R_CAMPUS_ADMIN', 'R_HOMEROOM', 'R_TEACHER') ON DUPLICATE KEY
 UPDATE role_id=
 VALUES (role_id), menu_id=

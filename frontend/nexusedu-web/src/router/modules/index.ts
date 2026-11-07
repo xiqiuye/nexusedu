@@ -29,5 +29,5 @@ export const routeModules: AppRouteRecord[] = [
   ...helpRoutes,
   knowledgeRoutes,
   aiRoutes,
-  studentRoutes
+  ...studentRoutes
 ]

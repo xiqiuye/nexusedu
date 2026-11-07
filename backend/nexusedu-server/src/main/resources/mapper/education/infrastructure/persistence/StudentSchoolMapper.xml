@@ -20,6 +20,26 @@
     <insert id="insertCampus">INSERT INTO school_campus(tenant_id,campus_code,name,address) VALUES(#{tenantId},#{campusCode},#{name},#{address})</insert>
     <select id="findCampus" resultType="map">SELECT id,campus_code AS campusCode,name,address,status FROM school_campus WHERE tenant_id=#{tenantId} AND campus_code=#{campusCode}</select>
 
+    <select id="findCampusForUpdate" resultType="map">
+        SELECT id,campus_code AS campusCode,name,address,status FROM school_campus
+        WHERE tenant_id=#{tenantId} AND id=#{campusId} FOR UPDATE
+    </select>
+    <update id="updateCampus">
+        UPDATE school_campus SET campus_code=#{campusCode},name=#{name},address=#{address}
+        WHERE tenant_id=#{tenantId} AND id=#{campusId}
+    </update>
+    <select id="countCampusReferences" resultType="int">
+        SELECT
+            (SELECT COUNT(*) FROM school_class WHERE tenant_id=#{tenantId} AND campus_id=#{campusId}) +
+            (SELECT COUNT(*) FROM student_enrollment WHERE tenant_id=#{tenantId} AND campus_id=#{campusId}) +
+            (SELECT COUNT(*) FROM student_campus_admin WHERE tenant_id=#{tenantId} AND campus_id=#{campusId}) +
+            (SELECT COUNT(*) FROM school_exam WHERE tenant_id=#{tenantId} AND campus_id=#{campusId}) +
+            (SELECT COUNT(*) FROM school_promotion_batch WHERE tenant_id=#{tenantId} AND campus_id=#{campusId})
+    </select>
+    <delete id="deleteCampus">
+        DELETE FROM school_campus WHERE tenant_id=#{tenantId} AND id=#{campusId}
+    </delete>
+
     <select id="findAcademicYears" resultType="map">SELECT id,name,starts_on AS startsOn,ends_on AS endsOn,is_current AS current FROM school_academic_year WHERE tenant_id=#{tenantId} ORDER BY starts_on DESC</select>
     <select id="countCurrentAcademicYear" resultType="int">SELECT COUNT(*) FROM school_academic_year WHERE tenant_id=#{tenantId} AND is_current=1</select>
     <update id="clearCurrentAcademicYears">UPDATE school_academic_year SET is_current=0 WHERE tenant_id=#{tenantId}</update>
@@ -51,8 +71,8 @@
     <insert id="insertClass">INSERT INTO school_class(tenant_id,campus_id,academic_year_id,grade,class_name,capacity) VALUES(#{tenantId},#{campusId},#{academicYearId},#{grade},#{className},#{capacity})</insert>
     <select id="findClass" resultType="map">SELECT id,campus_id AS campusId,academic_year_id AS academicYearId,grade,class_name AS className,capacity,status FROM school_class WHERE tenant_id=#{tenantId} AND campus_id=#{campusId} AND academic_year_id=#{academicYearId} AND grade=#{grade} AND class_name=#{className}</select>
     <select id="findClassById" resultType="map">SELECT <include refid="classColumns"/> FROM school_class c JOIN school_campus p ON p.id=c.campus_id AND p.tenant_id=c.tenant_id JOIN school_academic_year y ON y.id=c.academic_year_id AND y.tenant_id=c.tenant_id WHERE c.tenant_id=#{tenantId} AND c.id=#{classId}</select>
-    <select id="findClassTeacherAssignments" resultType="map">SELECT ct.id AS assignmentId,ct.teacher_id AS teacherId,t.user_id AS userId,COALESCE(u.real_name,u.nickname,u.username) AS teacherName,t.employee_no AS employeeNo,ct.subject_id AS subjectId,s.name AS subjectName,ct.assignment_type AS type,ct.starts_on AS startsOn,ct.ends_on AS endsOn FROM school_class_teacher ct JOIN school_teacher t ON t.id=ct.teacher_id AND t.tenant_id=ct.tenant_id JOIN sys_user u ON u.id=t.user_id AND u.tenant_id=t.tenant_id LEFT JOIN school_subject s ON s.id=ct.subject_id AND s.tenant_id=ct.tenant_id WHERE ct.tenant_id=#{tenantId} AND ct.class_id=#{classId} ORDER BY ct.ends_on IS NULL DESC,ct.starts_on DESC,ct.id DESC</select>
-    <select id="findClassTeacherAssignment" resultType="map">SELECT ct.id AS assignmentId,ct.teacher_id AS teacherId,t.user_id AS userId,ct.subject_id AS subjectId,ct.assignment_type AS type FROM school_class_teacher ct JOIN school_teacher t ON t.id=ct.teacher_id AND t.tenant_id=ct.tenant_id WHERE ct.tenant_id=#{tenantId} AND ct.class_id=#{classId} AND ct.id=#{assignmentId} AND ct.ends_on IS NULL</select>
+    <select id="findClassTeacherAssignments" resultType="map">SELECT ct.id AS assignmentId,ct.teacher_id AS teacherId,CAST(t.user_id AS CHAR) AS userId,COALESCE(u.real_name,u.nickname,u.username) AS teacherName,t.employee_no AS employeeNo,ct.subject_id AS subjectId,s.name AS subjectName,ct.assignment_type AS type,ct.starts_on AS startsOn,ct.ends_on AS endsOn FROM school_class_teacher ct JOIN school_teacher t ON t.id=ct.teacher_id AND t.tenant_id=ct.tenant_id JOIN sys_user u ON u.id=t.user_id AND u.tenant_id=t.tenant_id LEFT JOIN school_subject s ON s.id=ct.subject_id AND s.tenant_id=ct.tenant_id WHERE ct.tenant_id=#{tenantId} AND ct.class_id=#{classId} ORDER BY ct.ends_on IS NULL DESC,ct.starts_on DESC,ct.id DESC</select>
+    <select id="findClassTeacherAssignment" resultType="map">SELECT ct.id AS assignmentId,ct.teacher_id AS teacherId,CAST(t.user_id AS CHAR) AS userId,ct.subject_id AS subjectId,ct.assignment_type AS type FROM school_class_teacher ct JOIN school_teacher t ON t.id=ct.teacher_id AND t.tenant_id=ct.tenant_id WHERE ct.tenant_id=#{tenantId} AND ct.class_id=#{classId} AND ct.id=#{assignmentId} AND ct.ends_on IS NULL</select>
     <update id="closeClassTeacherAssignment">UPDATE school_class_teacher SET ends_on=#{endsOn} WHERE tenant_id=#{tenantId} AND class_id=#{classId} AND id=#{assignmentId} AND ends_on IS NULL</update>
     <select id="countOtherActiveClassTeacherAssignments" resultType="int">SELECT COUNT(*) FROM school_class_teacher WHERE tenant_id=#{tenantId} AND class_id=#{classId} AND teacher_id=#{teacherId} AND ends_on IS NULL</select>
     <delete id="deleteClassScope">DELETE FROM student_school_class_scope WHERE tenant_id=#{tenantId} AND class_id=#{classId} AND user_id=#{userId}</delete>
@@ -60,10 +80,10 @@
     <update id="updateClassStatus">UPDATE school_class SET status=#{status} WHERE tenant_id=#{tenantId} AND id=#{classId}</update>
     <select id="countEnrolledInClass" resultType="int">SELECT COUNT(DISTINCT student_id) FROM student_enrollment WHERE tenant_id=#{tenantId} AND class_id=#{classId} AND status='ENROLLED' AND ends_on IS NULL</select>
 
-    <select id="findTeachers" resultType="map">SELECT t.id AS teacherId,t.employee_no AS employeeNo,t.title,t.status,u.id AS userId,u.username,u.real_name AS realName,u.nickname,u.phone FROM school_teacher t JOIN sys_user u ON u.id=t.user_id AND u.tenant_id=t.tenant_id WHERE t.tenant_id=#{tenantId} AND t.status='ACTIVE' AND u.status='ENABLED' AND (#{search} IS NULL OR #{search}='' OR u.username LIKE CONCAT('%',#{search},'%') OR u.real_name LIKE CONCAT('%',#{search},'%') OR u.nickname LIKE CONCAT('%',#{search},'%') OR t.employee_no LIKE CONCAT('%',#{search},'%')) ORDER BY COALESCE(u.real_name,u.nickname,u.username) LIMIT 30</select>
-    <select id="findTeacherCandidates" resultType="map">SELECT u.id AS userId,u.username,u.real_name AS realName,u.nickname,u.phone,t.id AS teacherId,t.employee_no AS employeeNo,t.title FROM sys_user u LEFT JOIN school_teacher t ON t.tenant_id=u.tenant_id AND t.user_id=u.id AND t.status='ACTIVE' WHERE u.tenant_id=#{tenantId} AND u.status='ENABLED' AND u.user_type&lt;&gt;'SYSTEM' AND (#{search} IS NULL OR #{search}='' OR u.username LIKE CONCAT('%',#{search},'%') OR u.real_name LIKE CONCAT('%',#{search},'%') OR u.nickname LIKE CONCAT('%',#{search},'%') OR t.employee_no LIKE CONCAT('%',#{search},'%')) ORDER BY COALESCE(u.real_name,u.nickname,u.username) LIMIT 30</select>
+    <select id="findTeachers" resultType="map">SELECT t.id AS teacherId,t.employee_no AS employeeNo,t.title,t.status,CAST(u.id AS CHAR) AS userId,u.username,u.real_name AS realName,u.nickname,u.phone FROM school_teacher t JOIN sys_user u ON u.id=t.user_id AND u.tenant_id=t.tenant_id WHERE t.tenant_id=#{tenantId} AND t.status='ACTIVE' AND u.status='ENABLED' AND (#{search} IS NULL OR #{search}='' OR u.username LIKE CONCAT('%',#{search},'%') OR u.real_name LIKE CONCAT('%',#{search},'%') OR u.nickname LIKE CONCAT('%',#{search},'%') OR t.employee_no LIKE CONCAT('%',#{search},'%')) ORDER BY COALESCE(u.real_name,u.nickname,u.username) LIMIT 30</select>
+    <select id="findTeacherCandidates" resultType="map">SELECT CAST(u.id AS CHAR) AS userId,u.username,u.real_name AS realName,u.nickname,u.phone,t.id AS teacherId,t.employee_no AS employeeNo,t.title FROM sys_user u LEFT JOIN school_teacher t ON t.tenant_id=u.tenant_id AND t.user_id=u.id AND t.status='ACTIVE' WHERE u.tenant_id=#{tenantId} AND u.status='ENABLED' AND u.user_type&lt;&gt;'SYSTEM' AND (#{search} IS NULL OR #{search}='' OR u.username LIKE CONCAT('%',#{search},'%') OR u.real_name LIKE CONCAT('%',#{search},'%') OR u.nickname LIKE CONCAT('%',#{search},'%') OR t.employee_no LIKE CONCAT('%',#{search},'%')) ORDER BY COALESCE(u.real_name,u.nickname,u.username) LIMIT 30</select>
     <insert id="insertTeacher">INSERT INTO school_teacher(tenant_id,user_id,employee_no,title) VALUES(#{tenantId},#{userId},#{employeeNo},#{title})</insert>
-    <select id="findTeacher" resultType="map">SELECT id AS teacherId,user_id AS userId,employee_no AS employeeNo,title,status FROM school_teacher WHERE tenant_id=#{tenantId} AND user_id=#{userId}</select>
+    <select id="findTeacher" resultType="map">SELECT id AS teacherId,CAST(user_id AS CHAR) AS userId,employee_no AS employeeNo,title,status FROM school_teacher WHERE tenant_id=#{tenantId} AND user_id=#{userId}</select>
     <select id="findSubjects" resultType="map">SELECT id,subject_code AS subjectCode,name,grade_min AS gradeMin,grade_max AS gradeMax,status FROM school_subject WHERE tenant_id=#{tenantId} AND status='ACTIVE' AND (#{grade} IS NULL OR (grade_min&lt;=#{grade} AND grade_max&gt;=#{grade})) ORDER BY name</select>
     <insert id="insertSubject">INSERT INTO school_subject(tenant_id,subject_code,name,grade_min,grade_max) VALUES(#{tenantId},#{code},#{name},#{gradeMin},#{gradeMax})</insert>
     <select id="countSubject" resultType="int">SELECT COUNT(*) FROM school_subject WHERE tenant_id=#{tenantId} AND id=#{subjectId} AND status='ACTIVE' AND grade_min&lt;=#{grade} AND grade_max&gt;=#{grade}</select>

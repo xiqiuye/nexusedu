@@ -2,7 +2,6 @@
   <main class="school-page">
     <header class="page-heading">
       <div><span class="eyebrow">ASSESSMENT</span><h1>考试成绩</h1></div>
-      <el-button type="primary" @click="openExam">新建考试</el-button>
     </header>
     <section class="filter-row">
       <el-select v-model="filters.academicYearId" placeholder="学年" @change="loadExams">
@@ -83,61 +82,6 @@
       </el-table>
     </section>
     <el-empty v-else description="选择考试、班级和科目后录入成绩" />
-
-    <el-dialog v-model="examVisible" title="新建考试" width="500px" destroy-on-close>
-      <el-form :model="examForm" label-position="top">
-        <el-form-item label="考试名称" required
-          ><el-input v-model="examForm.name" placeholder="期中检测"
-        /></el-form-item>
-        <div class="form-pair">
-          <el-form-item label="学年" required
-            ><el-select v-model="examForm.academicYearId" class="full-width"
-              ><el-option
-                v-for="item in years"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id" /></el-select
-          ></el-form-item>
-          <el-form-item label="校区" required
-            ><el-select v-model="examForm.campusId" class="full-width"
-              ><el-option
-                v-for="item in campuses"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id" /></el-select
-          ></el-form-item>
-        </div>
-        <div class="form-pair">
-          <el-form-item label="年级" required
-            ><el-select v-model="examForm.grade" class="full-width"
-              ><el-option
-                v-for="grade in 6"
-                :key="grade"
-                :label="`小学${gradeLabel(grade)}年级`"
-                :value="grade" /></el-select
-          ></el-form-item>
-          <el-form-item label="学期" required
-            ><el-select v-model="examForm.term" class="full-width"
-              ><el-option label="第一学期" value="FIRST" /><el-option
-                label="第二学期"
-                value="SECOND" /><el-option label="暑期" value="SUMMER" /></el-select
-          ></el-form-item>
-        </div>
-        <el-form-item label="考试日期" required
-          ><el-date-picker
-            v-model="examForm.examDate"
-            type="date"
-            value-format="YYYY-MM-DD"
-            class="full-width"
-        /></el-form-item>
-      </el-form>
-      <template #footer
-        ><el-button @click="examVisible = false">取消</el-button
-        ><el-button type="primary" :loading="saving" @click="saveExam"
-          >创建考试</el-button
-        ></template
-      >
-    </el-dialog>
   </main>
 </template>
 
@@ -156,18 +100,9 @@
   const subjectId = ref('')
   const loadingRoster = ref(false)
   const saving = ref(false)
-  const examVisible = ref(false)
   const filters = reactive<Record<string, any>>({ academicYearId: '', campusId: '', grade: 1 })
-  const examForm = reactive<Record<string, any>>({
-    name: '',
-    academicYearId: '',
-    campusId: '',
-    grade: 1,
-    term: 'FIRST',
-    examDate: new Date().toISOString().slice(0, 10)
-  })
   const selectedExam = computed(() => exams.value.find((item) => item.id === selectedExamId.value))
-  const gradeLabel = (grade: number) => ['', '一', '二', '三', '四', '五', '六'][grade] || grade
+  const gradeLabel = (grade?: number) => ['', '一', '二', '三', '四', '五', '六'][grade || 0] || grade || ''
   async function loadExams() {
     classId.value = ''
     subjectId.value = ''
@@ -226,40 +161,6 @@
       })
     } finally {
       loadingRoster.value = false
-    }
-  }
-  function openExam() {
-    Object.assign(examForm, {
-      name: '',
-      academicYearId: filters.academicYearId || years.value[0]?.id || '',
-      campusId: filters.campusId || campuses.value[0]?.id || '',
-      grade: filters.grade || 1,
-      term: 'FIRST',
-      examDate: new Date().toISOString().slice(0, 10)
-    })
-    examVisible.value = true
-  }
-  async function saveExam() {
-    if (
-      !examForm.name.trim() ||
-      !examForm.academicYearId ||
-      !examForm.campusId ||
-      !examForm.examDate
-    )
-      return ElMessage.warning('请补全考试信息')
-    saving.value = true
-    try {
-      await studentApi.createExam(examForm)
-      examVisible.value = false
-      ElMessage.success('考试已创建')
-      Object.assign(filters, {
-        academicYearId: examForm.academicYearId,
-        campusId: examForm.campusId,
-        grade: examForm.grade
-      })
-      await loadExams()
-    } finally {
-      saving.value = false
     }
   }
   async function saveScores() {

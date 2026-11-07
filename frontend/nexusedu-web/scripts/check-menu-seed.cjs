@@ -6,7 +6,7 @@ const vm = require('node:vm')
 const ts = require('typescript')
 
 const uiRoot = path.resolve(__dirname, '..')
-const repoRoot = path.resolve(uiRoot, '..')
+const repoRoot = path.resolve(uiRoot, '..', '..')
 const cache = new Map()
 
 function load(file) {
@@ -39,8 +39,8 @@ function load(file) {
 function readRows(sql, table) {
   const result = []
   const pattern = new RegExp(
-    `INSERT INTO ${table}\\s*\\(([\\s\\S]*?)\\)\\s*VALUES\\s*([\\s\\S]*?)ON DUPLICATE KEY UPDATE`,
-    'g'
+    `INSERT INTO\\s+${table}\\s*\\(([\\s\\S]*?)\\)\\s*VALUES\\s*([\\s\\S]*?)(?=\\s+ON DUPLICATE KEY|;)`,
+    'gi'
   )
   for (const match of sql.matchAll(pattern)) {
     const columns = match[1].split(',').map((column) => column.trim())
@@ -60,12 +60,29 @@ function readRows(sql, table) {
   return result
 }
 
-const sql = fs.readFileSync(path.join(repoRoot, 'doc/sql/data_init.sql'), 'utf8')
+const sql = fs.readFileSync(path.join(repoRoot, 'backend/doc/sql/data_init.sql'), 'utf8')
 const menus = readRows(sql, 'sys_menu')
 const buttons = readRows(sql, 'sys_button')
 const byName = new Map(menus.map((menu) => [menu.route_name, menu]))
 assert.equal(byName.size, menus.length, 'Duplicate menu route name')
 assert.equal(new Set(menus.map((menu) => menu.id)).size, menus.length, 'Duplicate menu ID')
+const expectedPages = {
+  CampusManagement: '/school/campuses',
+  AcademicYearManagement: '/school/academic-years',
+  TeachingAssignments: '/school/assignments',
+  SubjectManagement: '/school/subjects',
+  ExamManagement: '/school/exams',
+  ScoreEntry: '/school/grades'
+}
+for (const [routeName, component] of Object.entries(expectedPages)) {
+  assert.equal(byName.get(routeName)?.component, component, `${routeName}.component`)
+}
+assert.equal(byName.get('SubjectManagement')?.parent_id, 1720, 'SubjectManagement.parent_id')
+assert.equal(
+  menus.some((menu) => menu.id === 1713),
+  false,
+  'Legacy exam menu must not be seeded'
+)
 const buttonKeys = buttons.map((button) => `${button.menu_id}:${button.auth_remark}`)
 assert.equal(new Set(buttonKeys).size, buttons.length, 'Duplicate button within a menu')
 let routeCount = 0
@@ -84,7 +101,6 @@ function visit(routes, parent = null) {
       redirect: route.redirect ?? null,
       title: meta.title,
       icon: meta.icon ?? null,
-      sort_no: (i + 1) * 10,
       keep_alive: Number(!!meta.keepAlive),
       visible: Number(!meta.isHide),
       hide_tab: Number(!!meta.isHideTab),
@@ -97,6 +113,7 @@ function visit(routes, parent = null) {
     for (const [key, value] of Object.entries(expected)) {
       assert.equal(menu[key], value, `${route.name}.${key}`)
     }
+    assert.ok(Number.isInteger(menu.sort_no) && menu.sort_no > 0, `${route.name}.sort_no`)
     for (const button of meta.authList || []) {
       buttonCount++
       assert.ok(
@@ -116,14 +133,15 @@ function visit(routes, parent = null) {
 visit(load(path.join(uiRoot, 'src/router/modules/index.ts')).routeModules)
 assert.equal(routeCount, menus.length, 'Seed contains extra menus')
 assert.equal(buttonCount, buttons.length, 'Seed contains extra buttons')
+assert.match(sql, /ON DUPLICATE KEY UPDATE[\s\S]*?route_name=VALUES\(route_name\)/i)
 assert.match(
   sql,
-  /FROM sys_menu m CROSS JOIN sys_role r\s+WHERE r\.role_code = 'R_SUPER' AND m\.status = 'ENABLED'/
+  /INSERT INTO sys_role_menu[\s\S]*?FROM sys_role r\s+CROSS JOIN[\s\S]*?WHERE r\.role_code IN \('R_SUPER'/
 )
 assert.match(
   sql,
-  /FROM sys_button b CROSS JOIN sys_role r\s+WHERE r\.role_code = 'R_SUPER' AND b\.status = 'ENABLED'/
+  /INSERT INTO sys_role_button[\s\S]*?FROM sys_role r\s+CROSS JOIN[\s\S]*?WHERE r\.role_code IN \('R_SUPER'/
 )
 console.log(
-  `Menu seed verified: ${routeCount} menus, ${buttonCount} button permissions, all granted to R_SUPER.`
+  `Menu seed verified: ${routeCount} menus, ${buttonCount} button permissions, assigned to configured school roles.`
 )

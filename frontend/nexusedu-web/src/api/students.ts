@@ -24,7 +24,75 @@ export interface StudentPage {
 export interface SchoolOption {
   id: string
   name: string
-  [key: string]: any
+  campusCode?: string
+  address?: string
+  startsOn?: string
+  endsOn?: string
+  current?: boolean
+  subjectCode?: string
+  gradeMin?: number
+  gradeMax?: number
+  campusId?: string
+  academicYearId?: string
+  campusName?: string
+  academicYear?: string
+  grade?: number
+  className?: string
+  capacity?: number
+  status?: string
+}
+export interface CampusCreateRequest {
+  campusCode: string
+  name: string
+  address?: string
+}
+export interface CampusRow extends CampusCreateRequest {
+  id: string
+  status: string
+}
+export interface AcademicYearCreateRequest {
+  name: string
+  startsOn: string
+  endsOn: string
+  current: boolean
+}
+export interface SubjectCreateRequest {
+  subjectCode: string
+  name: string
+  gradeMin: number
+  gradeMax: number
+}
+export interface ClassDetail extends SchoolOption {
+  roster: StudentPage
+  teacherAssignments: SchoolTeacher[]
+}
+export interface PromotionPreview {
+  students: StudentRow[]
+  targetClasses: SchoolOption[]
+  defaultTargetGrade: number | null
+  sourceGrade: number
+  targetAcademicYearId: string
+}
+export interface PromotionBatch {
+  batchId: string
+  status: string
+  items: Array<{ studentId: string; action: string; targetGrade?: number; reason?: string }>
+}
+export interface ExamRow {
+  id: string
+  name: string
+  academicYearId: string
+  examDate?: string
+  status?: string
+}
+export interface ScoreRow {
+  studentId: string
+  studentNo: string
+  name: string
+  score?: number
+  subjectId?: string
+  absent?: boolean
+  remark?: string
 }
 export interface SchoolTeacher {
   teacherId?: string
@@ -38,12 +106,11 @@ export interface SchoolTeacher {
 export const studentApi = {
   list: (params: Record<string, unknown>) =>
     request.get<StudentPage>({ url: '/api/school/students', params }),
-  campuses: () => request.get<SchoolOption[]>({ url: '/api/school/campuses' }),
+  campuses: () => request.get<CampusRow[]>({ url: '/api/school/campuses' }),
   years: () => request.get<SchoolOption[]>({ url: '/api/school/academic-years' }),
   classes: (params: Record<string, unknown>) =>
     request.get<SchoolOption[]>({ url: '/api/school/classes', params }),
-  classDetail: (id: string) =>
-    request.get<Record<string, any>>({ url: `/api/school/classes/${id}` }),
+  classDetail: (id: string) => request.get<ClassDetail>({ url: `/api/school/classes/${id}` }),
   updateClass: (id: string, data: Record<string, unknown>) =>
     request.put<Record<string, any>>({ url: `/api/school/classes/${id}`, data }),
   classStatus: (id: string, status: string) =>
@@ -65,27 +132,27 @@ export const studentApi = {
     request.post<SchoolTeacher>({ url: '/api/school/teachers', data }),
   subjects: (grade?: number) =>
     request.get<SchoolOption[]>({ url: '/api/school/subjects', params: { grade } }),
-  createSubject: (data: Record<string, unknown>) =>
+  createSubject: (data: SubjectCreateRequest) =>
     request.post<SchoolOption>({ url: '/api/school/subjects', data }),
   assignClassTeacher: (classId: string, data: Record<string, unknown>) =>
     request.put<void>({ url: `/api/school/classes/${classId}/teachers`, data }),
   removeClassTeacher: (classId: string, assignmentId: string) =>
     request.del<void>({ url: `/api/school/classes/${classId}/teachers/${assignmentId}` }),
   previewPromotion: (data: Record<string, unknown>) =>
-    request.post<Record<string, any>>({ url: '/api/school/promotions/preview', data }),
+    request.post<PromotionPreview>({ url: '/api/school/promotions/preview', data }),
   confirmPromotion: (data: Record<string, unknown>) =>
     request.post<{ batchId: string; processed: number }>({
       url: '/api/school/promotions/confirm',
       data
     }),
   promotionBatch: (batchId: string) =>
-    request.get<Record<string, any>>({ url: `/api/school/promotions/${batchId}` }),
+    request.get<PromotionBatch>({ url: `/api/school/promotions/${batchId}` }),
   exams: (params: Record<string, unknown>) =>
-    request.get<Record<string, any>[]>({ url: '/api/school/exams', params }),
+    request.get<ExamRow[]>({ url: '/api/school/exams', params }),
   createExam: (data: Record<string, unknown>) =>
-    request.post<Record<string, any>>({ url: '/api/school/exams', data }),
+    request.post<ExamRow>({ url: '/api/school/exams', data }),
   scores: (examId: string, classId?: string) =>
-    request.get<Record<string, any>[]>({ url: '/api/school/scores', params: { examId, classId } }),
+    request.get<ScoreRow[]>({ url: '/api/school/scores', params: { examId, classId } }),
   saveScore: (data: Record<string, unknown>) =>
     request.post<void>({ url: '/api/school/scores', data }),
   create: (data: Record<string, unknown>) =>
@@ -96,9 +163,13 @@ export const studentApi = {
       total: number
       errors: { row: number; studentNo: string; message: string }[]
     }>({ url: '/api/school/students/import', data }),
-  createCampus: (data: Record<string, unknown>) =>
-    request.post<SchoolOption>({ url: '/api/school/campuses', data }),
-  createYear: (data: Record<string, unknown>) =>
+  createCampus: (data: CampusCreateRequest, showErrorMessage = true) =>
+    request.post<CampusRow>({ url: '/api/school/campuses', data, showErrorMessage }),
+  updateCampus: (id: string, data: CampusCreateRequest) =>
+    request.put<CampusRow>({ url: `/api/school/campuses/${id}`, data, showErrorMessage: false }),
+  deleteCampus: (id: string) =>
+    request.del<void>({ url: `/api/school/campuses/${id}`, showErrorMessage: false }),
+  createYear: (data: AcademicYearCreateRequest) =>
     request.post<SchoolOption>({ url: '/api/school/academic-years', data }),
   createClass: (data: Record<string, unknown>) =>
     request.post<SchoolOption>({ url: '/api/school/classes', data }),

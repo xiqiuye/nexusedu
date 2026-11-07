@@ -6,7 +6,7 @@
         <h1>班级管理</h1>
       </div>
       <div class="heading-actions">
-        <el-button @click="router.push('/student/promotion')">学年升班</el-button>
+        <el-button @click="router.push('/organization/promotion')">学年升班</el-button>
         <el-button type="primary" @click="openCreate">新建班级</el-button>
       </div>
     </header>

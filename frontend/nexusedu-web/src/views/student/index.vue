@@ -422,7 +422,7 @@
     academicYearId: [{ required: true, message: '请选择学年', trigger: 'change' }],
     grade: [{ required: true, message: '请选择年级', trigger: 'change' }]
   }
-  const gradeLabel = (n: number) => ['', '一', '二', '三', '四', '五', '六'][n]
+  const gradeLabel = (n?: number) => (n == null ? '' : ['', '一', '二', '三', '四', '五', '六'][n])
   const teacherLabel = (teacher: SchoolTeacher) =>
     `${teacher.realName || teacher.nickname || teacher.username}${teacher.employeeNo ? ` · ${teacher.employeeNo}` : ''}`
   async function searchStaff(search: string) {

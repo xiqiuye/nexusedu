@@ -148,3 +148,8 @@ docker compose --env-file deploy/.env --env-file deploy/.deploy.env -f deploy/do
 3. 首次登录后立即修改初始化账号 `Admin / 123456` 的密码；该账号来自仓库的开发种子数据。
 4. 生产使用 HTTPS、限制 SSH 来源、启用自动安全更新，并定期验证备份恢复。
 5. 镜像构建使用非 root 用户运行后端；Compose 使用固定的大版本镜像标签，升级前先在预发布环境验证。
+## 数据库初始化与迁移
+
+MySQL 容器挂载的 `table_init.sql`、`data_init.sql` 只在全新数据卷首次启动时执行。
+已有环境请先备份，再按 `backend/doc/sql/migrations/` 中的版本顺序执行增量迁移；
+不要将迁移文件直接挂载到 `/docker-entrypoint-initdb.d`，避免初始化脚本和增量脚本混用。
