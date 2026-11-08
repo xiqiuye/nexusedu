@@ -1,5 +1,7 @@
 package com.xqy.nexusedu.ai.governance.service;
 
+import cn.hutool.json.JSONUtil;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -10,6 +12,7 @@ import com.xqy.nexusedu.ai.task.model.AiTask;
 import com.xqy.nexusedu.ai.task.model.AiTaskResult;
 import com.xqy.nexusedu.ai.task.model.QueryCriteria;
 import com.xqy.nexusedu.ai.task.model.ToolSource;
+import com.xqy.nexusedu.education.student.profile.vo.StudentData;
 
 /**
  * Enforces the bounded, untrusted-data boundary around tools and model prompts.
@@ -48,6 +51,19 @@ public final class AiSafetyPolicy {
             value.append("tool=").append(redact(result.getToolName())).append(" success=").append(result.isSuccess()).append('\n');
             if (result.getSummary() != null)
                 value.append("summary=").append(redact(limit(String.valueOf(result.getSummary()), MAX_RESULT_CHARS))).append('\n');
+            if (result.isSuccess() && "student".equals(result.getDomain())
+                    && "query_student".equals(result.getToolName()) && result.getItems() != null) {
+                for (Object item : result.getItems().stream().limit(100).toList()) {
+                    if (!(item instanceof StudentData student)) continue;
+                    // Only include fields allowed for AI; never serialize the entire student object.
+                    Map<String, Object> details = new LinkedHashMap<>();
+                    details.put("studentNo", redact(limit(student.getStudentNo(), 200)));
+                    details.put("name", redact(limit(student.getName(), 200)));
+                    details.put("gender", redact(limit(student.getGender(), 200)));
+                    details.put("enrolledAt", student.getEnrolledAt() == null ? null : student.getEnrolledAt().toString());
+                    value.append("student=").append(JSONUtil.toJsonStr(details)).append('\n');
+                }
+            }
             if (result.getSources() != null)
                 for (ToolSource source : result.getSources().stream().limit(MAX_SOURCES).toList()) {
                     value.append("source document=").append(redact(source.getDocumentNo())).append(" chunk=")

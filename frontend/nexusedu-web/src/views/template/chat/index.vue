@@ -57,7 +57,6 @@
         class="chat-message"
         :class="{ mine: message.isMe }"
       >
-        <ElAvatar :size="32" :src="message.isMe ? meAvatar : aiAvatar" />
         <div class="message-body">
           <div class="message-meta">{{ message.isMe ? '我' : 'AI 助手' }} · {{ message.time }}</div>
           <div class="message-content">
@@ -201,8 +200,6 @@
   import { consumeSse } from '@/utils/http/sse'
   import { useUserStore } from '@/store/modules/user'
   import { useAutoLayoutHeight } from '@/hooks/core/useLayoutHeight'
-  import meAvatar from '@/assets/images/avatar/avatar5.webp'
-  import aiAvatar from '@/assets/images/avatar/avatar10.webp'
 
   defineOptions({ name: 'TemplateChat' })
   interface ChatTurn {
@@ -794,11 +791,10 @@
   .chat-message {
     display: flex;
     align-items: flex-start;
-    gap: 10px;
     margin-bottom: 24px;
   }
   .chat-message.mine {
-    flex-direction: row-reverse;
+    justify-content: flex-end;
   }
   .message-body {
     max-width: 80%;

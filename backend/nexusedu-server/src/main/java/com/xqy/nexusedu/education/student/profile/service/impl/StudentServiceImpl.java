@@ -58,8 +58,10 @@ public class StudentServiceImpl implements StudentService {
         int safeLimit=limit==null||limit<=0?100:Math.min(limit,100);
         List<String> roles=authorizationMapper.findRoleCodes(userId);
         boolean schoolWide=roles.contains("R_SUPER")||roles.contains("R_SCHOOL_ADMIN");
-        return studentMapper.selectCurrentForAi(tenantId,userId,schoolWide,blankToNull(name),blankToNull(gender),blankToNull(studentNo),safeLimit)
-                .stream().map(StudentServiceImpl::toData).collect(Collectors.toList());
+        List<StudentData> list =  listStudents();
+        return list;
+//        return studentMapper.selectCurrentForAi(tenantId,userId,schoolWide,blankToNull(name),blankToNull(gender),blankToNull(studentNo),safeLimit)
+//                .stream().map(StudentServiceImpl::toData).collect(Collectors.toList());
     }
 
     private static String blankToNull(String value){return value==null||value.isBlank()?null:value.trim();}
